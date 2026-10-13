@@ -1,0 +1,57 @@
+/* ArandaCrafts — Temas claro / oscuro */
+
+:root {
+  --font-base: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --bg:            #f5f6f8;
+  --bg-elev:       #ffffff;
+  --bg-soft:       #eef0f4;
+  --border:        #d9dde3;
+  --text:          #1c2024;
+  --text-soft:     #5c636c;
+  --text-mute:     #8b929a;
+
+  --primary:       #2f6df6;
+  --primary-hover: #2459d1;
+  --primary-soft:  #e6efff;
+
+  --danger:        #d64545;
+  --danger-soft:   #fde8e8;
+
+  --ok:            #2e9d5a;
+  --ok-soft:       #e3f5ea;
+
+  --warn:          #d18b00;
+  --warn-soft:     #fff4dc;
+
+  --radius:        10px;
+  --radius-sm:     6px;
+  --shadow:        0 1px 3px rgba(0,0,0,.06), 0 6px 20px rgba(0,0,0,.04);
+  --shadow-sm:     0 1px 2px rgba(0,0,0,.05);
+}
+
+[data-theme="dark"] {
+  --bg:            #14171a;
+  --bg-elev:       #1c2024;
+  --bg-soft:       #23282d;
+  --border:        #2e343a;
+  --text:          #eef0f3;
+  --text-soft:     #b3b9c0;
+  --text-mute:     #7c838b;
+
+  --primary:       #6b9bff;
+  --primary-hover: #8bb1ff;
+  --primary-soft:  #1e2b46;
+
+  --danger:        #ff6b6b;
+  --danger-soft:   #3a1f1f;
+
+  --ok:            #5ed487;
+  --ok-soft:       #1e3328;
+
+  --warn:          #ffc24d;
+  --warn-soft:     #3a2f18;
+
+  --shadow:        0 1px 3px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+  --shadow-sm:     0 1px 2px rgba(0,0,0,.2);
+}
