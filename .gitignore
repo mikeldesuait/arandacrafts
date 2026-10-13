@@ -4,3 +4,8 @@ Thumbs.db
 *.bak
 .vscode/
 node_modules/
+
+# Backups locales
+*.bak
+*.bak-*
+*.bak[0-9]*
