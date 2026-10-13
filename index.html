@@ -60,10 +60,40 @@
         <p class="hint">Edita los campos directamente. Pulsa "Guardar cambios" para persistir.</p>
       </div>
       <div id="tab-estampacion" class="tab-panel">
-        <p class="placeholder">Catálogo de estampación (PASO 5).</p>
+        <div class="barra-acciones">
+          <button id="btnNuevaEstampa" class="btn btn-primario">+ Añadir estampación</button>
+          <button id="btnGuardarEstampa" class="btn">💾 Guardar cambios</button>
+        </div>
+        <table class="tabla tabla-edit">
+          <thead>
+            <tr>
+              <th style="width:50%">Nombre</th>
+              <th style="width:20%">Unidad</th>
+              <th style="width:18%">Precio (€)</th>
+              <th style="width:12%" class="centro">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-estampacion"></tbody>
+        </table>
+        <p class="hint">Vinilo → <strong>metro</strong> · DTF → <strong>plancha</strong> · Otras técnicas → <strong>ud</strong>.</p>
       </div>
       <div id="tab-mano" class="tab-panel">
-        <p class="placeholder">Catálogo de mano de obra y extras (PASO 6).</p>
+        <div class="barra-acciones">
+          <button id="btnNuevaMano" class="btn btn-primario">+ Añadir mano de obra / extra</button>
+          <button id="btnGuardarMano" class="btn">💾 Guardar cambios</button>
+        </div>
+        <table class="tabla tabla-edit">
+          <thead>
+            <tr>
+              <th style="width:50%">Nombre</th>
+              <th style="width:20%">Tipo</th>
+              <th style="width:18%">Precio (€)</th>
+              <th style="width:12%" class="centro">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-mano"></tbody>
+        </table>
+        <p class="hint"><strong>hora</strong> → precio por hora · <strong>fijo</strong> → precio por trabajo · <strong>unidad</strong> → precio por unidad.</p>
       </div>
     </section>
 

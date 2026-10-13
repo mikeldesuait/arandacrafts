@@ -253,3 +253,22 @@ label {
   color: var(--text-mute);
   margin-top: 0.5rem;
 }
+
+/* Select editable en tabla (unidades) */
+.tabla-edit select {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+}
+.tabla-edit select:hover { border-color: var(--border); }
+.tabla-edit select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg-elev);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}

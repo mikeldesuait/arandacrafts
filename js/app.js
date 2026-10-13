@@ -69,6 +69,188 @@
     }
   }
 
+  // ── Catálogo: Mano de obra / Extras ─────────────────
+
+  var TIPOS_MANO = ['hora', 'fijo', 'unidad'];
+
+  function opcionesTipoMano(actual) {
+    return TIPOS_MANO.map(function (t) {
+      var sel = (t === actual) ? ' selected' : '';
+      return '<option value="' + t + '"' + sel + '>' + t + '</option>';
+    }).join('');
+  }
+
+  function renderMano() {
+    var tbody = document.getElementById('tbody-mano');
+    if (!tbody || !window.Modelo) return;
+
+    var lista = window.Modelo.getMano();
+    tbody.innerHTML = '';
+
+    lista.forEach(function (m) {
+      var tr = document.createElement('tr');
+      tr.dataset.id = m.id;
+
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" value="' + escapar(m.nombre) + '"></td>' +
+        '<td><select class="inp-tipo">' + opcionesTipoMano(m.tipo || 'unidad') + '</select></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (m.precio || 0) + '"></td>' +
+        '<td class="centro"><div class="acciones-fila">' +
+          '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
+        '</div></td>';
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function initCatalogoMano() {
+    var btnNueva   = document.getElementById('btnNuevaMano');
+    var btnGuardar = document.getElementById('btnGuardarMano');
+    var tbody      = document.getElementById('tbody-mano');
+    if (!tbody) return;
+
+    renderMano();
+
+    if (btnNueva) {
+      btnNueva.addEventListener('click', function () {
+        var tr = document.createElement('tr');
+        tr.dataset.id = window.Storage.uuid();
+        tr.dataset.nueva = '1';
+        tr.innerHTML =
+          '<td><input type="text" class="inp-nombre" placeholder="Nueva mano de obra / extra..."></td>' +
+          '<td><select class="inp-tipo">' + opcionesTipoMano('unidad') + '</select></td>' +
+          '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
+          '<td class="centro"><div class="acciones-fila">' +
+            '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
+          '</div></td>';
+        tbody.appendChild(tr);
+        tr.querySelector('.inp-nombre').focus();
+      });
+    }
+
+    tbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('.btn-borrar');
+      if (!btn) return;
+      var tr = btn.closest('tr');
+      if (tr) tr.remove();
+    });
+
+    if (btnGuardar) {
+      btnGuardar.addEventListener('click', function () {
+        var filas = tbody.querySelectorAll('tr');
+        var lista = [];
+        filas.forEach(function (tr) {
+          var nombre = tr.querySelector('.inp-nombre').value.trim();
+          if (!nombre) return;
+          var tipo = tr.querySelector('.inp-tipo').value;
+          var precio = parseFloat(tr.querySelector('.inp-precio').value) || 0;
+          lista.push({
+            id: tr.dataset.id || window.Storage.uuid(),
+            nombre: nombre,
+            tipo: tipo,
+            precio: Math.round(precio * 100) / 100
+          });
+        });
+
+        window.Modelo.setMano(lista);
+        renderMano();
+        flash('Mano de obra guardada ✓');
+      });
+    }
+  }
+
+  // ── Catálogo: Estampación ───────────────────────────
+
+  var UNIDADES = ['metro', 'plancha', 'ud'];
+
+  function opcionesUnidad(actual) {
+    return UNIDADES.map(function (u) {
+      var sel = (u === actual) ? ' selected' : '';
+      return '<option value="' + u + '"' + sel + '>' + u + '</option>';
+    }).join('');
+  }
+
+  function renderEstampacion() {
+    var tbody = document.getElementById('tbody-estampacion');
+    if (!tbody || !window.Modelo) return;
+
+    var lista = window.Modelo.getEstampacion();
+    tbody.innerHTML = '';
+
+    lista.forEach(function (e) {
+      var tr = document.createElement('tr');
+      tr.dataset.id = e.id;
+      tr.dataset.grupo = e.grupo || '';
+
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" value="' + escapar(e.nombre) + '"></td>' +
+        '<td><select class="inp-unidad">' + opcionesUnidad(e.unidad || 'ud') + '</select></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (e.precio || 0) + '"></td>' +
+        '<td class="centro"><div class="acciones-fila">' +
+          '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
+        '</div></td>';
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function initCatalogoEstampacion() {
+    var btnNueva   = document.getElementById('btnNuevaEstampa');
+    var btnGuardar = document.getElementById('btnGuardarEstampa');
+    var tbody      = document.getElementById('tbody-estampacion');
+    if (!tbody) return;
+
+    renderEstampacion();
+
+    if (btnNueva) {
+      btnNueva.addEventListener('click', function () {
+        var tr = document.createElement('tr');
+        tr.dataset.id = window.Storage.uuid();
+        tr.dataset.nueva = '1';
+        tr.innerHTML =
+          '<td><input type="text" class="inp-nombre" placeholder="Nueva estampación..."></td>' +
+          '<td><select class="inp-unidad">' + opcionesUnidad('ud') + '</select></td>' +
+          '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
+          '<td class="centro"><div class="acciones-fila">' +
+            '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
+          '</div></td>';
+        tbody.appendChild(tr);
+        tr.querySelector('.inp-nombre').focus();
+      });
+    }
+
+    tbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('.btn-borrar');
+      if (!btn) return;
+      var tr = btn.closest('tr');
+      if (tr) tr.remove();
+    });
+
+    if (btnGuardar) {
+      btnGuardar.addEventListener('click', function () {
+        var filas = tbody.querySelectorAll('tr');
+        var lista = [];
+        filas.forEach(function (tr) {
+          var nombre = tr.querySelector('.inp-nombre').value.trim();
+          if (!nombre) return;
+          var unidad = tr.querySelector('.inp-unidad').value;
+          var precio = parseFloat(tr.querySelector('.inp-precio').value) || 0;
+          lista.push({
+            id: tr.dataset.id || window.Storage.uuid(),
+            nombre: nombre,
+            unidad: unidad,
+            precio: Math.round(precio * 100) / 100,
+            grupo: tr.dataset.grupo || ''
+          });
+        });
+
+        window.Modelo.setEstampacion(lista);
+        renderEstampacion();
+        flash('Estampación guardada ✓');
+      });
+    }
+  }
+
   // ── Catálogo: Prendas ───────────────────────────────
 
   function renderPrendas() {
@@ -167,6 +349,8 @@
     initNav();
     initTabsCatalogo();
     initCatalogoPrendas();
+    initCatalogoEstampacion();
+    initCatalogoMano();
     var st = document.getElementById('status-info');
     if (st) st.textContent = 'ArandaCrafts · v0.1 · ' + new Date().toLocaleDateString('es-ES');
   });
