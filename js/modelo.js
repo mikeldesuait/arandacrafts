@@ -142,17 +142,49 @@ window.Modelo = (function () {
 
   function getEmisor() {
     return window.Storage.get(K.emisor, {
-      nombre: 'ArandaCrafts', nif: '', direccion: '', telefono: '', email: ''
+      marca:     'Aranda Crafts',
+      eslogan:   'Estampación textil · Vinilo · DTF',
+      nombre:    '',
+      nif:       '',
+      direccion: '',
+      telefono:  '',
+      email:     '',
+      web:       '',
+      iban:      ''
     });
   }
   function setEmisor(e) { window.Storage.set(K.emisor, e); }
 
-  function siguienteNumero() {
+  var PREFIJOS = {
+    presupuesto: 'PRE',
+    albaran:     'ALB',
+    factura:     'FAC',
+    orden:       'OT'
+  };
+
+  function siguienteNumero(tipo) {
+    tipo = tipo || 'presupuesto';
+    var prefijo = PREFIJOS[tipo] || 'PRE';
     var año = new Date().getFullYear();
+    var clave = tipo + ':' + año;
     var cont = window.Storage.get(K.contador, {});
-    cont[año] = (cont[año] || 0) + 1;
+    cont[clave] = (cont[clave] || 0) + 1;
     window.Storage.set(K.contador, cont);
-    return año + '-' + String(cont[año]).padStart(3, '0');
+    return prefijo + '-' + año + '-' + String(cont[clave]).padStart(3, '0');
+  }
+
+  function prefijoDeTipo(tipo) {
+    return PREFIJOS[tipo] || 'PRE';
+  }
+
+  function etiquetaDeTipo(tipo) {
+    var e = {
+      presupuesto: 'PRESUPUESTO',
+      albaran:     'ALBARÁN',
+      factura:     'FACTURA',
+      orden:       'ORDEN DE TRABAJO'
+    };
+    return e[tipo] || 'PRESUPUESTO';
   }
 
   function subtotalLinea(linea) {
@@ -187,6 +219,8 @@ window.Modelo = (function () {
     getPresupuestos: getPresupuestos, setPresupuestos: setPresupuestos,
     getEmisor: getEmisor,           setEmisor: setEmisor,
     siguienteNumero: siguienteNumero,
+    prefijoDeTipo: prefijoDeTipo,
+    etiquetaDeTipo: etiquetaDeTipo,
     subtotalLinea: subtotalLinea,
     totalPresupuesto: totalPresupuesto
   };

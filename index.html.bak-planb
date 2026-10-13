@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArandaCrafts — Presupuestos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="logo">🛠️ ArandaCrafts</span>
+    </div>
+    <nav class="topbar-nav">
+      <button class="nav-btn" data-vista="inicio">Inicio</button>
+      <button class="nav-btn" data-vista="catalogo">Catálogo</button>
+      <button class="nav-btn" data-vista="presupuestos">Presupuestos</button>
+      <button class="nav-btn" data-vista="ajustes">Ajustes</button>
+    </nav>
+    <button id="btnMenu" class="icon-btn menu-btn" title="Menú">☰</button>
+    <div class="topbar-right">
+      <button id="btnTema" class="icon-btn" title="Cambiar tema">🌙</button>
+    </div>
+  </header>
+
+  <main id="contenido" class="contenido">
+
+    <section id="vista-inicio" class="vista activa">
+      <div class="inicio-grid">
+        <div class="inicio-col-izq">
+          <div class="card inicio-resumen">
+            <div class="resumen-bloque">
+              <span class="resumen-label">Presupuestado este mes</span>
+              <span id="inicio-total-mes" class="resumen-valor">0,00 €</span>
+            </div>
+            <div class="resumen-bloque">
+              <span class="resumen-label">Presupuestos guardados</span>
+              <span id="inicio-num-presu" class="resumen-valor">0</span>
+            </div>
+          </div>
+
+          <div class="card inicio-acciones">
+            <button id="inicioNuevoPresupuesto" class="btn btn-primario btn-lg">+ Nuevo presupuesto</button>
+            <button id="inicioIrCatalogo" class="btn btn-lg">Ver catálogo</button>
+            <button id="inicioIrAjustes" class="btn btn-lg">Ajustes</button>
+          </div>
+        </div>
+
+        <div class="inicio-col-der">
+          <div class="card">
+            <div class="inicio-cabecera-lista">
+              <h2>Últimos presupuestos</h2>
+              <button id="inicioVerTodos" class="btn btn-sm">Ver todos →</button>
+            </div>
+            <div id="inicio-vacio" class="placeholder">Aún no has creado presupuestos.</div>
+            <table class="tabla" id="inicio-tabla" style="display:none">
+              <thead>
+                <tr>
+                  <th style="width:16%">Tipo</th>
+                  <th style="width:18%">Número</th>
+                  <th style="width:14%">Fecha</th>
+                  <th style="width:26%">Cliente</th>
+                  <th style="width:16%" class="derecha">Total</th>
+                  <th style="width:10%">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="inicio-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="vista-catalogo" class="vista">
+      <h1>Catálogo</h1>
+      <div class="tabs">
+        <button class="tab activa" data-tab="ropa">👕 Ropa</button>
+        <button class="tab" data-tab="materiales">📦 Materiales</button>
+        <button class="tab" data-tab="mano">🛠️ Mano de obra</button>
+      </div>
+
+      <div id="tab-ropa" class="tab-panel activa">
+        <div class="barra-acciones">
+          <button id="btnNuevaRopa" class="btn btn-primario">+ Añadir ropa</button>
+          <button id="btnGuardarRopa" class="btn">💾 Guardar cambios</button>
+        </div>
+        <table class="tabla tabla-edit">
+          <thead>
+            <tr>
+              <th style="width:60%">Nombre</th>
+              <th style="width:25%">Precio (€)</th>
+              <th style="width:15%" class="centro">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-ropa"></tbody>
+        </table>
+        <p class="hint">Prendas Roly (camisetas, pantalones, sudaderas...). Siempre en <strong>ud</strong>.</p>
+      </div>
+
+      <div id="tab-materiales" class="tab-panel">
+        <div class="barra-acciones">
+          <button id="btnGuardarMateriales" class="btn">💾 Guardar cambios</button>
+        </div>
+
+        <!-- Subcategoría: VINILOS -->
+        <details class="subcat" open>
+          <summary>🎨 Vinilos</summary>
+          <div class="subcat-body">
+            <button class="btn btn-sm btn-primario" data-add-subcat="vinilo">+ Añadir vinilo</button>
+            <table class="tabla tabla-edit">
+              <thead>
+                <tr>
+                  <th style="width:50%">Nombre</th>
+                  <th style="width:20%">Unidad</th>
+                  <th style="width:18%">Precio (€)</th>
+                  <th style="width:12%" class="centro">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-vinilos"></tbody>
+            </table>
+          </div>
+        </details>
+
+        <!-- Subcategoría: DTF -->
+        <details class="subcat">
+          <summary>🖨️ DTF</summary>
+          <div class="subcat-body">
+            <button class="btn btn-sm btn-primario" data-add-subcat="dtf">+ Añadir DTF</button>
+            <table class="tabla tabla-edit">
+              <thead>
+                <tr>
+                  <th style="width:50%">Nombre</th>
+                  <th style="width:20%">Unidad</th>
+                  <th style="width:18%">Precio (€)</th>
+                  <th style="width:12%" class="centro">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-dtf"></tbody>
+            </table>
+          </div>
+        </details>
+
+        <!-- Subcategoría: SUBLIMACIÓN -->
+        <details class="subcat">
+          <summary>☕ Sublimación</summary>
+          <div class="subcat-body">
+            <button class="btn btn-sm btn-primario" data-add-subcat="sublimacion">+ Añadir sublimación</button>
+            <table class="tabla tabla-edit">
+              <thead>
+                <tr>
+                  <th style="width:50%">Nombre</th>
+                  <th style="width:20%">Unidad</th>
+                  <th style="width:18%">Precio (€)</th>
+                  <th style="width:12%" class="centro">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-sublimacion"></tbody>
+            </table>
+          </div>
+        </details>
+
+        <p class="hint">Cada subcategoría tiene su propio botón "+ Añadir". Al guardar, se persisten todas juntas.</p>
+      </div>
+
+      <div id="tab-mano" class="tab-panel">
+        <div class="barra-acciones">
+          <button id="btnNuevaMano" class="btn btn-primario">+ Añadir mano de obra / extra</button>
+          <button id="btnGuardarMano" class="btn">💾 Guardar cambios</button>
+        </div>
+        <table class="tabla tabla-edit">
+          <thead>
+            <tr>
+              <th style="width:50%">Nombre</th>
+              <th style="width:20%">Tipo</th>
+              <th style="width:18%">Precio (€)</th>
+              <th style="width:12%" class="centro">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-mano"></tbody>
+        </table>
+        <p class="hint"><strong>hora</strong> → precio por hora · <strong>fijo</strong> → precio por trabajo · <strong>unidad</strong> → precio por unidad.</p>
+      </div>
+
+    </section>
+
+    <section id="vista-presupuestos" class="vista">
+
+      <!-- ░░░ LISTADO ░░░ -->
+      <div id="presu-listado">
+        <div class="barra-acciones">
+          <button id="btnNuevoPresupuesto" class="btn btn-primario">+ Nuevo presupuesto</button>
+        </div>
+        <div id="presu-vacio" class="placeholder">Aún no hay presupuestos. Pulsa “+ Nuevo presupuesto”.</div>
+        <table class="tabla" id="presu-tabla" style="display:none">
+          <thead>
+            <tr>
+              <th style="width:14%">Tipo</th>
+              <th style="width:16%">Número</th>
+              <th style="width:12%">Fecha</th>
+              <th style="width:26%">Cliente</th>
+              <th style="width:14%" class="derecha">Total</th>
+              <th style="width:10%">Estado</th>
+              <th style="width:8%" class="centro">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-presupuestos"></tbody>
+        </table>
+      </div>
+
+      <!-- ░░░ EDITOR ░░░ -->
+      <div id="presu-editor" style="display:none">
+        <div class="barra-acciones">
+          <button id="btnVolverListado" class="btn">← Volver al listado</button>
+          <button id="btnGuardarPresupuesto" class="btn btn-primario">💾 Guardar</button>
+          <button id="btnImprimirPresupuesto" class="btn">🖨️ Imprimir / PDF</button>
+          <button id="btnEliminarPresupuesto" class="btn btn-peligro">🗑️ Eliminar</button>
+        </div>
+
+        <div class="card">
+          <div class="fila">
+            <div class="campo" style="flex:0 0 180px">
+              <label>Tipo de documento</label>
+              <select id="presu-tipo">
+                <option value="presupuesto">Presupuesto</option>
+                <option value="albaran">Albarán</option>
+                <option value="factura">Factura</option>
+                <option value="orden">Orden de trabajo</option>
+              </select>
+            </div>
+            <div class="campo" style="flex:0 0 180px">
+              <label>Número</label>
+              <input type="text" id="presu-numero" readonly>
+            </div>
+            <div class="campo" style="flex:0 0 160px">
+              <label>Fecha</label>
+              <input type="date" id="presu-fecha">
+            </div>
+            <div class="campo">
+              <label>Cliente</label>
+              <input type="text" id="presu-cliente" placeholder="Nombre del cliente">
+            </div>
+            <div class="campo" style="flex:0 0 200px">
+              <label>Contacto</label>
+              <input type="text" id="presu-contacto" placeholder="Teléfono / email">
+            </div>
+          </div>
+          <div class="campo">
+            <label>Descripción del trabajo</label>
+            <input type="text" id="presu-descripcion" placeholder="Ej: 20 camisetas peña con logo">
+          </div>
+        </div>
+
+        <!-- Bloque: ROPA -->
+        <div class="bloque-lineas card">
+          <div class="bloque-cabecera">
+            <h2>👕 Ropa</h2>
+            <button class="btn btn-sm" data-add="ropa">+ Añadir ropa</button>
+          </div>
+          <table class="tabla tabla-lineas">
+            <thead>
+              <tr>
+                <th style="width:44%">Concepto</th>
+                <th style="width:14%">Cantidad</th>
+                <th style="width:18%">Precio (€)</th>
+                <th style="width:16%" class="derecha">Subtotal</th>
+                <th style="width:8%" class="centro"></th>
+              </tr>
+            </thead>
+            <tbody id="lineas-ropa"></tbody>
+          </table>
+        </div>
+
+        <!-- Bloque: MATERIALES -->
+        <div class="bloque-lineas card">
+          <div class="bloque-cabecera">
+            <h2>📦 Materiales</h2>
+            <button class="btn btn-sm" data-add="material">+ Añadir material</button>
+          </div>
+          <table class="tabla tabla-lineas">
+            <thead>
+              <tr>
+                <th style="width:38%">Concepto</th>
+                <th style="width:12%">Cantidad</th>
+                <th style="width:14%">Unidad</th>
+                <th style="width:16%">Precio (€)</th>
+                <th style="width:14%" class="derecha">Subtotal</th>
+                <th style="width:6%" class="centro"></th>
+              </tr>
+            </thead>
+            <tbody id="lineas-material"></tbody>
+          </table>
+        </div>
+
+        <!-- Bloque: MANO DE OBRA -->
+        <div class="bloque-lineas card">
+          <div class="bloque-cabecera">
+            <h2>🛠️ Mano de obra / Extras</h2>
+            <button class="btn btn-sm" data-add="mano">+ Añadir mano de obra</button>
+          </div>
+          <table class="tabla tabla-lineas">
+            <thead>
+              <tr>
+                <th style="width:38%">Concepto</th>
+                <th style="width:12%">Cantidad</th>
+                <th style="width:14%">Tipo</th>
+                <th style="width:16%">Precio (€)</th>
+                <th style="width:14%" class="derecha">Subtotal</th>
+                <th style="width:6%" class="centro"></th>
+              </tr>
+            </thead>
+            <tbody id="lineas-mano"></tbody>
+          </table>
+        </div>
+
+        <!-- Totales y estado -->
+        <div class="card total-card">
+          <div class="fila">
+            <div class="campo" style="flex:0 0 220px">
+              <label>Estado</label>
+              <select id="presu-estado">
+                <option value="borrador">Borrador</option>
+                <option value="enviado">Enviado</option>
+                <option value="aceptado">Aceptado</option>
+                <option value="rechazado">Rechazado</option>
+                <option value="hecho">Hecho</option>
+              </select>
+            </div>
+            <div class="campo" style="flex:1">
+              <label>Notas</label>
+              <input type="text" id="presu-notas" placeholder="Observaciones, condiciones de pago...">
+            </div>
+            <div class="total-box">
+              <span class="total-label">TOTAL</span>
+              <span id="presu-total" class="total-valor">0,00 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="vista-ajustes" class="vista">
+      <h1>Ajustes</h1>
+
+      <!-- ─── DATOS DEL EMISOR ─── -->
+      <div class="card">
+        <h2>👤 Datos del emisor</h2>
+        <p class="hint">Aparecerán en la cabecera de los presupuestos impresos.</p>
+        <div class="fila">
+          <div class="campo">
+            <label>Nombre comercial (marca)</label>
+            <input type="text" id="aj-marca" placeholder="Aranda.Crafts">
+          </div>
+          <div class="campo">
+            <label>Eslogan / descripción corta</label>
+            <input type="text" id="aj-eslogan" placeholder="Estampación textil · Vinilo · DTF">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Nombre fiscal (titular autónomo)</label>
+            <input type="text" id="aj-nombre" placeholder="Miguel Aranda López">
+          </div>
+          <div class="campo" style="flex:0 0 180px">
+            <label>NIF / CIF</label>
+            <input type="text" id="aj-nif" placeholder="12345678A">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Dirección</label>
+            <input type="text" id="aj-direccion" placeholder="Calle Mayor 1, 09400 Aranda de Duero (Burgos)">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Teléfono</label>
+            <input type="text" id="aj-telefono" placeholder="600 000 000">
+          </div>
+          <div class="campo">
+            <label>Email</label>
+            <input type="email" id="aj-email" placeholder="info@arandacrafts.com">
+          </div>
+          <div class="campo">
+            <label>Web (opcional)</label>
+            <input type="text" id="aj-web" placeholder="www.arandacrafts.com">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>IBAN (opcional)</label>
+            <input type="text" id="aj-iban" placeholder="ES00 0000 0000 0000 0000 0000">
+          </div>
+        </div>
+        <div class="acciones">
+          <button id="aj-guardar-emisor" class="btn btn-primario">💾 Guardar datos</button>
+        </div>
+      </div>
+
+      <!-- ─── BACKUP ─── -->
+      <div class="card">
+        <h2>💾 Backup</h2>
+        <p class="hint">Guarda o restaura toda la aplicación (catálogos, presupuestos, emisor, tema).</p>
+        <div class="barra-acciones">
+          <button id="aj-exportar" class="btn">📤 Exportar backup</button>
+          <button id="aj-importar" class="btn">📥 Importar backup</button>
+          <input type="file" id="aj-file" accept="application/json,.json" hidden>
+        </div>
+        <p class="hint">Última exportación: <span id="aj-ultima-export">—</span></p>
+      </div>
+
+      <!-- ─── APARIENCIA ─── -->
+      <div class="card">
+        <h2>🎨 Apariencia</h2>
+        <div class="fila">
+          <div class="campo" style="flex:0 0 220px">
+            <label>Tema</label>
+            <select id="aj-tema">
+              <option value="light">Claro</option>
+              <option value="dark">Oscuro</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── INFORMACIÓN ─── -->
+      <div class="card">
+        <h2>ℹ️ Información</h2>
+        <ul class="info-lista">
+          <li><strong>Versión:</strong> v0.1</li>
+          <li><strong>Presupuestos guardados:</strong> <span id="aj-info-presu">0</span></li>
+          <li><strong>Materiales en catálogo:</strong> <span id="aj-info-materiales">0</span></li>
+          <li><strong>Ropa en catálogo:</strong> <span id="aj-info-ropa">0</span></li>
+          <li><strong>Mano de obra:</strong> <span id="aj-info-mano">0</span></li>
+          <li><strong>Espacio usado:</strong> <span id="aj-info-espacio">0 KB</span></li>
+        </ul>
+        <p class="hint">
+          Repo: <a href="https://github.com/mikeldesuait/arandacrafts" target="_blank" rel="noopener">
+            github.com/mikeldesuait/arandacrafts
+          </a>
+        </p>
+      </div>
+
+      <!-- ─── ZONA PELIGROSA ─── -->
+      <div class="card card-peligro">
+        <h2>⚠️ Zona peligrosa</h2>
+        <p class="hint">Borra <strong>todos</strong> los datos de la aplicación. No se puede deshacer.</p>
+        <div class="barra-acciones">
+          <button id="aj-borrar-todo" class="btn btn-peligro">🗑️ Borrar todos los datos</button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="statusbar">
+    <span id="status-info">ArandaCrafts · v0.1</span>
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/modelo.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- ═══════════ MODAL: Selector de catálogo ═══════════ -->
+  <div id="modal-catalogo" class="modal-overlay" hidden>
+    <div class="modal-caja">
+      <header class="modal-cabecera">
+        <h3 id="modal-titulo">Elegir del catálogo</h3>
+        <button class="modal-cerrar" id="modal-cerrar" title="Cerrar (Esc)">✕</button>
+      </header>
+
+      <div class="modal-tabs" id="modal-tabs">
+        <button class="mtab" data-cat="ropa">👕 Ropa</button>
+        <button class="mtab" data-cat="vinilos">🎨 Vinilos</button>
+        <button class="mtab" data-cat="dtf">🖨️ DTF</button>
+        <button class="mtab" data-cat="sublimacion">☕ Sublimación</button>
+        <button class="mtab" data-cat="mano">🛠️ Mano de obra</button>
+      </div>
+
+      <div class="modal-buscador">
+        <input type="text" id="modal-buscar" placeholder="Buscar..." autocomplete="off">
+      </div>
+
+      <ul class="modal-lista" id="modal-lista"></ul>
+    </div>
+  </div>
+
+
+  <!-- ═══════════ ZONA DE IMPRESIÓN (oculta) ═══════════ -->
+  <div id="print-area" aria-hidden="true"></div>
+
+</body>
+</html>
