@@ -1,9 +1,15 @@
-/* ArandaCrafts — Arranque */
+/* ArandaCrafts — Arranque y lógica de la app
+   (versión limpia, sin duplicados)
+*/
 
 (function () {
   'use strict';
 
   var KEY_TEMA = 'arandacrafts:tema';
+
+  // ═══════════════════════════════════════════════════
+  // TEMA
+  // ═══════════════════════════════════════════════════
 
   function aplicarTema(t) {
     document.documentElement.setAttribute('data-theme', t);
@@ -24,256 +30,48 @@
     }
   }
 
-  function mostrarVista(nombre) {
-    var vistas = document.querySelectorAll('.vista');
-    for (var i = 0; i < vistas.length; i++) vistas[i].classList.remove('activa');
+  // ═══════════════════════════════════════════════════
+  // NAVEGACIÓN
+  // ═══════════════════════════════════════════════════
 
+  function mostrarVista(nombre) {
+    document.querySelectorAll('.vista').forEach(function (v) { v.classList.remove('activa'); });
     var target = document.getElementById('vista-' + nombre);
     if (target) target.classList.add('activa');
 
-    var botones = document.querySelectorAll('.nav-btn');
-    for (var j = 0; j < botones.length; j++) {
-      botones[j].classList.toggle('activa', botones[j].dataset.vista === nombre);
-    }
+    document.querySelectorAll('.nav-btn').forEach(function (b) {
+      b.classList.toggle('activa', b.dataset.vista === nombre);
+    });
 
     location.hash = nombre;
   }
 
   function initNav() {
-    var botones = document.querySelectorAll('.nav-btn');
-    for (var i = 0; i < botones.length; i++) {
-      botones[i].addEventListener('click', function () {
-        mostrarVista(this.dataset.vista);
-      });
-    }
+    document.querySelectorAll('.nav-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { mostrarVista(this.dataset.vista); });
+    });
     var inicial = (location.hash || '#inicio').slice(1);
     mostrarVista(inicial || 'inicio');
   }
 
   function initTabsCatalogo() {
-    var tabs = document.querySelectorAll('.tab');
-    for (var i = 0; i < tabs.length; i++) {
-      tabs[i].addEventListener('click', function () {
+    document.querySelectorAll('.tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
         var grupo = this.parentElement;
-        var hermanos = grupo.querySelectorAll('.tab');
-        for (var j = 0; j < hermanos.length; j++) hermanos[j].classList.remove('activa');
+        grupo.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('activa'); });
         this.classList.add('activa');
 
         var cont = grupo.parentElement;
-        var paneles = cont.querySelectorAll('.tab-panel');
-        for (var k = 0; k < paneles.length; k++) paneles[k].classList.remove('activa');
-
+        cont.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('activa'); });
         var panel = document.getElementById('tab-' + this.dataset.tab);
         if (panel) panel.classList.add('activa');
       });
-    }
-  }
-
-  // ── Catálogo: Mano de obra / Extras ─────────────────
-
-  var TIPOS_MANO = ['hora', 'fijo', 'unidad'];
-
-  function opcionesTipoMano(actual) {
-    return TIPOS_MANO.map(function (t) {
-      var sel = (t === actual) ? ' selected' : '';
-      return '<option value="' + t + '"' + sel + '>' + t + '</option>';
-    }).join('');
-  }
-
-  function renderMano() {
-    var tbody = document.getElementById('tbody-mano');
-    if (!tbody || !window.Modelo) return;
-
-    var lista = window.Modelo.getMano();
-    tbody.innerHTML = '';
-
-    lista.forEach(function (m) {
-      var tr = document.createElement('tr');
-      tr.dataset.id = m.id;
-
-      tr.innerHTML =
-        '<td><input type="text" class="inp-nombre" value="' + escapar(m.nombre) + '"></td>' +
-        '<td><select class="inp-tipo">' + opcionesTipoMano(m.tipo || 'unidad') + '</select></td>' +
-        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (m.precio || 0) + '"></td>' +
-        '<td class="centro"><div class="acciones-fila">' +
-          '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
-        '</div></td>';
-
-      tbody.appendChild(tr);
     });
   }
 
-  function initCatalogoMano() {
-    var btnNueva   = document.getElementById('btnNuevaMano');
-    var btnGuardar = document.getElementById('btnGuardarMano');
-    var tbody      = document.getElementById('tbody-mano');
-    if (!tbody) return;
-
-    renderMano();
-
-    if (btnNueva) {
-      btnNueva.addEventListener('click', function () {
-        var tr = document.createElement('tr');
-        tr.dataset.id = window.Storage.uuid();
-        tr.dataset.nueva = '1';
-        tr.innerHTML =
-          '<td><input type="text" class="inp-nombre" placeholder="Nueva mano de obra / extra..."></td>' +
-          '<td><select class="inp-tipo">' + opcionesTipoMano('unidad') + '</select></td>' +
-          '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
-          '<td class="centro"><div class="acciones-fila">' +
-            '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
-          '</div></td>';
-        tbody.appendChild(tr);
-        tr.querySelector('.inp-nombre').focus();
-      });
-    }
-
-    tbody.addEventListener('click', function (e) {
-      var btn = e.target.closest('.btn-borrar');
-      if (!btn) return;
-      var tr = btn.closest('tr');
-      if (tr) tr.remove();
-    });
-
-    if (btnGuardar) {
-      btnGuardar.addEventListener('click', function () {
-        var filas = tbody.querySelectorAll('tr');
-        var lista = [];
-        filas.forEach(function (tr) {
-          var nombre = tr.querySelector('.inp-nombre').value.trim();
-          if (!nombre) return;
-          var tipo = tr.querySelector('.inp-tipo').value;
-          var precio = parseFloat(tr.querySelector('.inp-precio').value) || 0;
-          lista.push({
-            id: tr.dataset.id || window.Storage.uuid(),
-            nombre: nombre,
-            tipo: tipo,
-            precio: Math.round(precio * 100) / 100
-          });
-        });
-
-        window.Modelo.setMano(lista);
-        renderMano();
-        flash('Mano de obra guardada ✓');
-      });
-    }
-  }
-
-  // ── Catálogo: Estampación ───────────────────────────
-
-  var UNIDADES = ['metro', 'plancha', 'ud'];
-
-  function opcionesUnidad(actual) {
-    return UNIDADES.map(function (u) {
-      var sel = (u === actual) ? ' selected' : '';
-      return '<option value="' + u + '"' + sel + '>' + u + '</option>';
-    }).join('');
-  }
-
-  function renderEstampacion() {
-    var tbody = document.getElementById('tbody-estampacion');
-    if (!tbody || !window.Modelo) return;
-
-    var lista = window.Modelo.getEstampacion();
-    tbody.innerHTML = '';
-
-    lista.forEach(function (e) {
-      var tr = document.createElement('tr');
-      tr.dataset.id = e.id;
-      tr.dataset.grupo = e.grupo || '';
-
-      tr.innerHTML =
-        '<td><input type="text" class="inp-nombre" value="' + escapar(e.nombre) + '"></td>' +
-        '<td><select class="inp-unidad">' + opcionesUnidad(e.unidad || 'ud') + '</select></td>' +
-        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (e.precio || 0) + '"></td>' +
-        '<td class="centro"><div class="acciones-fila">' +
-          '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
-        '</div></td>';
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  function initCatalogoEstampacion() {
-    var btnNueva   = document.getElementById('btnNuevaEstampa');
-    var btnGuardar = document.getElementById('btnGuardarEstampa');
-    var tbody      = document.getElementById('tbody-estampacion');
-    if (!tbody) return;
-
-    renderEstampacion();
-
-    if (btnNueva) {
-      btnNueva.addEventListener('click', function () {
-        var tr = document.createElement('tr');
-        tr.dataset.id = window.Storage.uuid();
-        tr.dataset.nueva = '1';
-        tr.innerHTML =
-          '<td><input type="text" class="inp-nombre" placeholder="Nueva estampación..."></td>' +
-          '<td><select class="inp-unidad">' + opcionesUnidad('ud') + '</select></td>' +
-          '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
-          '<td class="centro"><div class="acciones-fila">' +
-            '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
-          '</div></td>';
-        tbody.appendChild(tr);
-        tr.querySelector('.inp-nombre').focus();
-      });
-    }
-
-    tbody.addEventListener('click', function (e) {
-      var btn = e.target.closest('.btn-borrar');
-      if (!btn) return;
-      var tr = btn.closest('tr');
-      if (tr) tr.remove();
-    });
-
-    if (btnGuardar) {
-      btnGuardar.addEventListener('click', function () {
-        var filas = tbody.querySelectorAll('tr');
-        var lista = [];
-        filas.forEach(function (tr) {
-          var nombre = tr.querySelector('.inp-nombre').value.trim();
-          if (!nombre) return;
-          var unidad = tr.querySelector('.inp-unidad').value;
-          var precio = parseFloat(tr.querySelector('.inp-precio').value) || 0;
-          lista.push({
-            id: tr.dataset.id || window.Storage.uuid(),
-            nombre: nombre,
-            unidad: unidad,
-            precio: Math.round(precio * 100) / 100,
-            grupo: tr.dataset.grupo || ''
-          });
-        });
-
-        window.Modelo.setEstampacion(lista);
-        renderEstampacion();
-        flash('Estampación guardada ✓');
-      });
-    }
-  }
-
-  // ── Catálogo: Prendas ───────────────────────────────
-
-  function renderPrendas() {
-    var tbody = document.getElementById('tbody-prendas');
-    if (!tbody || !window.Modelo) return;
-
-    var prendas = window.Modelo.getPrendas();
-    tbody.innerHTML = '';
-
-    prendas.forEach(function (p) {
-      var tr = document.createElement('tr');
-      tr.dataset.id = p.id;
-
-      tr.innerHTML =
-        '<td><input type="text" class="inp-nombre" value="' + escapar(p.nombre) + '"></td>' +
-        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (p.precio || 0) + '"></td>' +
-        '<td class="centro"><div class="acciones-fila">' +
-          '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
-        '</div></td>';
-
-      tbody.appendChild(tr);
-    });
-  }
+  // ═══════════════════════════════════════════════════
+  // UTILIDADES
+  // ═══════════════════════════════════════════════════
 
   function escapar(s) {
     return String(s == null ? '' : s)
@@ -281,57 +79,9 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function initCatalogoPrendas() {
-    var btnNueva   = document.getElementById('btnNuevaPrenda');
-    var btnGuardar = document.getElementById('btnGuardarPrendas');
-    var tbody      = document.getElementById('tbody-prendas');
-    if (!tbody) return;
-
-    renderPrendas();
-
-    if (btnNueva) {
-      btnNueva.addEventListener('click', function () {
-        var tr = document.createElement('tr');
-        tr.dataset.id = window.Storage.uuid();
-        tr.dataset.nueva = '1';
-        tr.innerHTML =
-          '<td><input type="text" class="inp-nombre" placeholder="Nueva prenda..."></td>' +
-          '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
-          '<td class="centro"><div class="acciones-fila">' +
-            '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
-          '</div></td>';
-        tbody.appendChild(tr);
-        tr.querySelector('.inp-nombre').focus();
-      });
-    }
-
-    tbody.addEventListener('click', function (e) {
-      var btn = e.target.closest('.btn-borrar');
-      if (!btn) return;
-      var tr = btn.closest('tr');
-      if (tr) tr.remove();
-    });
-
-    if (btnGuardar) {
-      btnGuardar.addEventListener('click', function () {
-        var filas = tbody.querySelectorAll('tr');
-        var lista = [];
-        filas.forEach(function (tr) {
-          var nombre = tr.querySelector('.inp-nombre').value.trim();
-          var precio = parseFloat(tr.querySelector('.inp-precio').value) || 0;
-          if (!nombre) return;
-          lista.push({
-            id: tr.dataset.id || window.Storage.uuid(),
-            nombre: nombre,
-            precio: Math.round(precio * 100) / 100
-          });
-        });
-
-        window.Modelo.setPrendas(lista);
-        renderPrendas();
-        flash('Prendas guardadas ✓');
-      });
-    }
+  function eur(n) {
+    var v = parseFloat(n) || 0;
+    return v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
   }
 
   function flash(msg) {
@@ -343,14 +93,618 @@
     flash._t = setTimeout(function () { st.textContent = previo; }, 2000);
   }
 
+  function hoyISO() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function opcionesUnidad(actual) {
+    var UNIDADES = ['ud', 'metro', 'plancha', 'hoja', 'kg'];
+    return UNIDADES.map(function (u) {
+      return '<option value="' + u + '"' + (u === actual ? ' selected' : '') + '>' + u + '</option>';
+    }).join('');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // CATÁLOGO — ROPA
+  // ═══════════════════════════════════════════════════
+
+  function renderRopa() {
+    var tbody = document.getElementById('tbody-ropa');
+    if (!tbody || !window.Modelo) return;
+    tbody.innerHTML = '';
+    window.Modelo.getRopa().forEach(function (p) {
+      var tr = document.createElement('tr');
+      tr.dataset.id = p.id;
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" value="' + escapar(p.nombre) + '"></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (p.precio || 0) + '"></td>' +
+        '<td class="centro"><button class="btn btn-sm btn-peligro btn-borrar">🗑️</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function initCatalogoRopa() {
+    var tbody = document.getElementById('tbody-ropa');
+    if (!tbody) return;
+    renderRopa();
+
+    document.getElementById('btnNuevaRopa')?.addEventListener('click', function () {
+      var tr = document.createElement('tr');
+      tr.dataset.id = window.Storage.uuid();
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" placeholder="Nueva prenda..."></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
+        '<td class="centro"><button class="btn btn-sm btn-peligro btn-borrar">🗑️</button></td>';
+      tbody.appendChild(tr);
+      tr.querySelector('.inp-nombre').focus();
+    });
+
+    tbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('.btn-borrar');
+      if (btn) btn.closest('tr').remove();
+    });
+
+    document.getElementById('btnGuardarRopa')?.addEventListener('click', function () {
+      var lista = [];
+      tbody.querySelectorAll('tr').forEach(function (tr) {
+        var nombre = tr.querySelector('.inp-nombre').value.trim();
+        if (!nombre) return;
+        lista.push({
+          id: tr.dataset.id || window.Storage.uuid(),
+          nombre: nombre,
+          unidad: 'ud',
+          precio: Math.round((parseFloat(tr.querySelector('.inp-precio').value) || 0) * 100) / 100
+        });
+      });
+      window.Modelo.setRopa(lista);
+      renderRopa();
+      flash('Ropa guardada ✓');
+    });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // CATÁLOGO — MATERIALES (Vinilos / DTF / Sublimación)
+  // ═══════════════════════════════════════════════════
+
+  var SUBCATS = [
+    { key: 'vinilos',     get: 'getVinilos',     set: 'setVinilos',     tbody: 'tbody-vinilos' },
+    { key: 'dtf',         get: 'getDtf',         set: 'setDtf',         tbody: 'tbody-dtf' },
+    { key: 'sublimacion', get: 'getSublimacion', set: 'setSublimacion', tbody: 'tbody-sublimacion' }
+  ];
+
+  function renderSubcatMaterial(sc) {
+    var tbody = document.getElementById(sc.tbody);
+    if (!tbody || !window.Modelo) return;
+    tbody.innerHTML = '';
+    window.Modelo[sc.get]().forEach(function (m) {
+      var tr = document.createElement('tr');
+      tr.dataset.id = m.id;
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" value="' + escapar(m.nombre) + '"></td>' +
+        '<td><select class="inp-unidad">' + opcionesUnidad(m.unidad || 'ud') + '</select></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (m.precio || 0) + '"></td>' +
+        '<td class="centro"><button class="btn btn-sm btn-peligro btn-borrar">🗑️</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderMateriales() {
+    SUBCATS.forEach(renderSubcatMaterial);
+  }
+
+  function initCatalogoMateriales() {
+    if (!document.getElementById('tbody-vinilos')) return;
+    renderMateriales();
+
+    document.querySelectorAll('[data-add-subcat]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var sc = SUBCATS.find(function (x) { return x.key === btn.dataset.addSubcat; });
+        if (!sc) return;
+        var tbody = document.getElementById(sc.tbody);
+        var tr = document.createElement('tr');
+        tr.dataset.id = window.Storage.uuid();
+        tr.innerHTML =
+          '<td><input type="text" class="inp-nombre" placeholder="Nuevo material..."></td>' +
+          '<td><select class="inp-unidad">' + opcionesUnidad('ud') + '</select></td>' +
+          '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
+          '<td class="centro"><button class="btn btn-sm btn-peligro btn-borrar">🗑️</button></td>';
+        tbody.appendChild(tr);
+        tr.querySelector('.inp-nombre').focus();
+      });
+    });
+
+    SUBCATS.forEach(function (sc) {
+      var tbody = document.getElementById(sc.tbody);
+      if (!tbody) return;
+      tbody.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-borrar');
+        if (btn) btn.closest('tr').remove();
+      });
+    });
+
+    document.getElementById('btnGuardarMateriales')?.addEventListener('click', function () {
+      SUBCATS.forEach(function (sc) {
+        var tbody = document.getElementById(sc.tbody);
+        var lista = [];
+        tbody.querySelectorAll('tr').forEach(function (tr) {
+          var nombre = tr.querySelector('.inp-nombre').value.trim();
+          if (!nombre) return;
+          lista.push({
+            id: tr.dataset.id || window.Storage.uuid(),
+            nombre: nombre,
+            unidad: tr.querySelector('.inp-unidad').value,
+            precio: Math.round((parseFloat(tr.querySelector('.inp-precio').value) || 0) * 100) / 100
+          });
+        });
+        window.Modelo[sc.set](lista);
+      });
+      renderMateriales();
+      flash('Materiales guardados ✓');
+    });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // CATÁLOGO — MANO DE OBRA / EXTRAS
+  // ═══════════════════════════════════════════════════
+
+  var TIPOS_MANO = ['hora', 'fijo', 'unidad'];
+
+  function opcionesTipoMano(actual) {
+    return TIPOS_MANO.map(function (t) {
+      return '<option value="' + t + '"' + (t === actual ? ' selected' : '') + '>' + t + '</option>';
+    }).join('');
+  }
+
+  function renderMano() {
+    var tbody = document.getElementById('tbody-mano');
+    if (!tbody || !window.Modelo) return;
+    tbody.innerHTML = '';
+    window.Modelo.getMano().forEach(function (m) {
+      var tr = document.createElement('tr');
+      tr.dataset.id = m.id;
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" value="' + escapar(m.nombre) + '"></td>' +
+        '<td><select class="inp-tipo">' + opcionesTipoMano(m.tipo || 'unidad') + '</select></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (m.precio || 0) + '"></td>' +
+        '<td class="centro"><button class="btn btn-sm btn-peligro btn-borrar">🗑️</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function initCatalogoMano() {
+    var tbody = document.getElementById('tbody-mano');
+    if (!tbody) return;
+    renderMano();
+
+    document.getElementById('btnNuevaMano')?.addEventListener('click', function () {
+      var tr = document.createElement('tr');
+      tr.dataset.id = window.Storage.uuid();
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" placeholder="Nueva mano de obra..."></td>' +
+        '<td><select class="inp-tipo">' + opcionesTipoMano('unidad') + '</select></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
+        '<td class="centro"><button class="btn btn-sm btn-peligro btn-borrar">🗑️</button></td>';
+      tbody.appendChild(tr);
+      tr.querySelector('.inp-nombre').focus();
+    });
+
+    tbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('.btn-borrar');
+      if (btn) btn.closest('tr').remove();
+    });
+
+    document.getElementById('btnGuardarMano')?.addEventListener('click', function () {
+      var lista = [];
+      tbody.querySelectorAll('tr').forEach(function (tr) {
+        var nombre = tr.querySelector('.inp-nombre').value.trim();
+        if (!nombre) return;
+        lista.push({
+          id: tr.dataset.id || window.Storage.uuid(),
+          nombre: nombre,
+          tipo: tr.querySelector('.inp-tipo').value,
+          precio: Math.round((parseFloat(tr.querySelector('.inp-precio').value) || 0) * 100) / 100
+        });
+      });
+      window.Modelo.setMano(lista);
+      renderMano();
+      flash('Mano de obra guardada ✓');
+    });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // PRESUPUESTOS — Editor + Listado
+  // ═══════════════════════════════════════════════════
+
+  var presuActual = null;
+
+  function totalLineas() {
+    var t = 0;
+    document.querySelectorAll('.tabla-lineas tbody tr').forEach(function (tr) {
+      var c = parseFloat(tr.querySelector('.inp-cantidad')?.value) || 0;
+      var p = parseFloat(tr.querySelector('.inp-precio')?.value) || 0;
+      t += c * p;
+    });
+    return Math.round(t * 100) / 100;
+  }
+
+  function actualizarTotalPresu() {
+    var el = document.getElementById('presu-total');
+    if (el) el.textContent = eur(totalLineas());
+  }
+
+  function recalcularFila(tr) {
+    var c = parseFloat(tr.querySelector('.inp-cantidad').value) || 0;
+    var p = parseFloat(tr.querySelector('.inp-precio').value) || 0;
+    var sub = Math.round(c * p * 100) / 100;
+    tr.querySelector('.subtotal').textContent = eur(sub);
+  }
+
+  function crearFilaLinea(grupo, datos) {
+    datos = datos || {};
+    var tr = document.createElement('tr');
+    tr.dataset.grupo = grupo;
+
+    var concepto = datos.concepto || '';
+    var cantidad = (datos.cantidad != null) ? datos.cantidad : 1;
+    var precio   = (datos.precio != null) ? datos.precio : 0;
+    var unidad   = datos.unidad || '';
+    var tipo     = datos.tipo   || '';
+
+    var html = '';
+    html += '<td><input type="text" class="inp-concepto" value="' + escapar(concepto) + '" placeholder="Concepto..."></td>';
+    html += '<td><input type="number" step="0.01" min="0" class="inp-cantidad num" value="' + cantidad + '"></td>';
+
+    if (grupo === 'material') {
+      html += '<td><input type="text" class="inp-unidad" value="' + escapar(unidad || 'ud') + '"></td>';
+    }
+    if (grupo === 'mano') {
+      html += '<td><input type="text" class="inp-tipo" value="' + escapar(tipo || 'unidad') + '"></td>';
+    }
+
+    html += '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + precio + '"></td>';
+    html += '<td class="derecha subtotal mono">0,00 €</td>';
+    html += '<td class="centro"><button class="btn btn-sm btn-peligro btn-borrar-linea">🗑️</button></td>';
+
+    tr.innerHTML = html;
+    tr.dataset.idRef = datos.idRef || '';
+
+    tr.querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        recalcularFila(tr);
+        actualizarTotalPresu();
+      });
+    });
+    tr.querySelector('.btn-borrar-linea').addEventListener('click', function () {
+      tr.remove();
+      actualizarTotalPresu();
+    });
+
+    recalcularFila(tr);
+    return tr;
+  }
+
+  // ── Modal selector de catálogo ─────────────────────
+
+  var modalCtx = null; // { grupo: 'ropa'|'material'|'mano'|null, cat: 'ropa'|'vinilos'|... }
+
+  function abrirModal(grupo, catInicial) {
+    modalCtx = { grupo: grupo, cat: catInicial || 'ropa' };
+    var modal = document.getElementById('modal-catalogo');
+    if (!modal) return;
+    modal.hidden = false;
+    document.getElementById('modal-buscar').value = '';
+    activarTabModal(modalCtx.cat);
+    pintarListaModal();
+    setTimeout(function () {
+      document.getElementById('modal-buscar').focus();
+    }, 50);
+  }
+
+  function cerrarModal() {
+    var modal = document.getElementById('modal-catalogo');
+    if (modal) modal.hidden = true;
+    modalCtx = null;
+  }
+
+  function activarTabModal(cat) {
+    document.querySelectorAll('#modal-tabs .mtab').forEach(function (t) {
+      t.classList.toggle('activa', t.dataset.cat === cat);
+    });
+    if (modalCtx) modalCtx.cat = cat;
+  }
+
+  function itemsModal(cat) {
+    if (cat === 'ropa')        return window.Modelo.getRopa();
+    if (cat === 'vinilos')     return window.Modelo.getVinilos();
+    if (cat === 'dtf')         return window.Modelo.getDtf();
+    if (cat === 'sublimacion') return window.Modelo.getSublimacion();
+    if (cat === 'mano')        return window.Modelo.getMano();
+    return [];
+  }
+
+  function pintarListaModal() {
+    var ul = document.getElementById('modal-lista');
+    if (!ul || !modalCtx) return;
+
+    var filtro = (document.getElementById('modal-buscar').value || '').toLowerCase();
+    var lista = itemsModal(modalCtx.cat).filter(function (it) {
+      return !filtro || (it.nombre || '').toLowerCase().indexOf(filtro) >= 0;
+    });
+
+    ul.innerHTML = '';
+
+    if (!lista.length) {
+      var li = document.createElement('li');
+      li.className = 'vacio';
+      li.textContent = 'Sin resultados';
+      ul.appendChild(li);
+      return;
+    }
+
+    lista.forEach(function (it) {
+      var li = document.createElement('li');
+      var unidad = it.unidad ? '<span class="unidad">' + escapar(it.unidad) + '</span>' : '';
+      if (!unidad && it.tipo) unidad = '<span class="unidad">' + escapar(it.tipo) + '</span>';
+      li.innerHTML =
+        '<span class="nombre">' + escapar(it.nombre) + unidad + '</span>' +
+        '<span class="precio">' + eur(it.precio) + '</span>';
+      li.addEventListener('click', function () {
+        aplicarSeleccion(it);
+      });
+      ul.appendChild(li);
+    });
+  }
+
+  function aplicarSeleccion(item) {
+    if (!modalCtx) return;
+    var cat = modalCtx.cat;
+
+    // Traducir catálogo elegido al grupo del presupuesto:
+    // ropa → grupo "ropa"
+    // vinilos/dtf/sublimacion → grupo "material" (con su unidad)
+    // mano → grupo "mano"
+    var grupo;
+    if (cat === 'ropa')        grupo = 'ropa';
+    else if (cat === 'mano')   grupo = 'mano';
+    else                       grupo = 'material';
+
+    var datos = {
+      idRef:    item.id,
+      concepto: item.nombre,
+      cantidad: 1,
+      precio:   item.precio
+    };
+    if (grupo === 'material') datos.unidad = item.unidad || 'ud';
+    if (grupo === 'mano')     datos.tipo   = item.tipo   || 'unidad';
+
+    var tbody = document.getElementById('lineas-' + grupo);
+    if (!tbody) { cerrarModal(); return; }
+
+    tbody.appendChild(crearFilaLinea(grupo, datos));
+    actualizarTotalPresu();
+
+    // Feedback: dejamos el modal abierto para añadir más, así el usuario va rápido.
+    // (si prefieres cerrarlo, descomenta la siguiente línea)
+    // cerrarModal();
+  }
+
+  function initModalCatalogo() {
+    document.getElementById('modal-cerrar')?.addEventListener('click', cerrarModal);
+    document.getElementById('modal-catalogo')?.addEventListener('click', function (e) {
+      if (e.target.classList.contains('modal-overlay')) cerrarModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !document.getElementById('modal-catalogo')?.hidden) cerrarModal();
+    });
+    document.querySelectorAll('#modal-tabs .mtab').forEach(function (t) {
+      t.addEventListener('click', function () {
+        activarTabModal(t.dataset.cat);
+        pintarListaModal();
+        document.getElementById('modal-buscar').focus();
+      });
+    });
+    document.getElementById('modal-buscar')?.addEventListener('input', pintarListaModal);
+  }
+
+  function cargarEnEditor(presu) {
+    presuActual = presu;
+
+    document.getElementById('presu-numero').value      = presu.numero || '';
+    document.getElementById('presu-fecha').value       = presu.fecha || hoyISO();
+    document.getElementById('presu-cliente').value     = (presu.cliente && presu.cliente.nombre) || '';
+    document.getElementById('presu-contacto').value    = (presu.cliente && presu.cliente.contacto) || '';
+    document.getElementById('presu-descripcion').value = presu.descripcion || '';
+    document.getElementById('presu-notas').value       = presu.notas || '';
+    document.getElementById('presu-estado').value      = presu.estado || 'borrador';
+
+    ['ropa', 'material', 'mano'].forEach(function (g) {
+      var tb = document.getElementById('lineas-' + g);
+      if (tb) tb.innerHTML = '';
+    });
+
+    (presu.lineas || []).forEach(function (l) {
+      var tb = document.getElementById('lineas-' + l.grupo);
+      if (tb) tb.appendChild(crearFilaLinea(l.grupo, l));
+    });
+
+    actualizarTotalPresu();
+    document.getElementById('presu-listado').style.display = 'none';
+    document.getElementById('presu-editor').style.display  = '';
+  }
+
+  function volverAlListado() {
+    presuActual = null;
+    document.getElementById('presu-editor').style.display  = 'none';
+    document.getElementById('presu-listado').style.display = '';
+    renderListadoPresupuestos();
+  }
+
+  function recogerPresupuesto() {
+    var numero = document.getElementById('presu-numero').value;
+    var fecha  = document.getElementById('presu-fecha').value || hoyISO();
+    var cliente = {
+      nombre:   document.getElementById('presu-cliente').value.trim(),
+      contacto: document.getElementById('presu-contacto').value.trim()
+    };
+
+    var lineas = [];
+    ['ropa', 'material', 'mano'].forEach(function (g) {
+      var tb = document.getElementById('lineas-' + g);
+      if (!tb) return;
+      tb.querySelectorAll('tr').forEach(function (tr) {
+        var concepto = tr.querySelector('.inp-concepto').value.trim();
+        if (!concepto) return;
+        var l = {
+          grupo:    g,
+          idRef:    tr.dataset.idRef || '',
+          concepto: concepto,
+          cantidad: parseFloat(tr.querySelector('.inp-cantidad').value) || 0,
+          precio:   parseFloat(tr.querySelector('.inp-precio').value) || 0
+        };
+        if (g === 'material') l.unidad = tr.querySelector('.inp-unidad').value;
+        if (g === 'mano')     l.tipo   = tr.querySelector('.inp-tipo').value;
+        lineas.push(l);
+      });
+    });
+
+    return {
+      id:          presuActual && presuActual.id ? presuActual.id : window.Storage.uuid(),
+      numero:      numero,
+      fecha:       fecha,
+      cliente:     cliente,
+      descripcion: document.getElementById('presu-descripcion').value.trim(),
+      notas:       document.getElementById('presu-notas').value.trim(),
+      estado:      document.getElementById('presu-estado').value,
+      lineas:      lineas
+    };
+  }
+
+  function guardarPresupuesto() {
+    var p = recogerPresupuesto();
+    if (!p.cliente.nombre) { alert('Pon al menos el nombre del cliente.'); return; }
+
+    var lista = window.Modelo.getPresupuestos();
+    var idx = lista.findIndex(function (x) { return x.id === p.id; });
+    if (idx >= 0) lista[idx] = p; else lista.push(p);
+
+    window.Modelo.setPresupuestos(lista);
+    flash('Presupuesto ' + p.numero + ' guardado ✓');
+    volverAlListado();
+  }
+
+  function eliminarPresupuesto() {
+    if (!presuActual || !presuActual.id) { volverAlListado(); return; }
+    if (!confirm('¿Eliminar el presupuesto ' + presuActual.numero + '?')) return;
+
+    var lista = window.Modelo.getPresupuestos().filter(function (x) { return x.id !== presuActual.id; });
+    window.Modelo.setPresupuestos(lista);
+    flash('Presupuesto eliminado');
+    volverAlListado();
+  }
+
+  function renderListadoPresupuestos() {
+    var lista = window.Modelo.getPresupuestos();
+    var tabla = document.getElementById('presu-tabla');
+    var vacio = document.getElementById('presu-vacio');
+    var tbody = document.getElementById('tbody-presupuestos');
+    if (!tbody) return;
+
+    if (!lista.length) {
+      tabla.style.display = 'none';
+      vacio.style.display = '';
+      return;
+    }
+    tabla.style.display = '';
+    vacio.style.display = 'none';
+
+    tbody.innerHTML = '';
+    lista
+      .slice()
+      .sort(function (a, b) { return (b.fecha || '').localeCompare(a.fecha || ''); })
+      .forEach(function (p) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + escapar(p.numero) + '</td>' +
+          '<td>' + escapar(p.fecha) + '</td>' +
+          '<td>' + escapar(p.cliente && p.cliente.nombre || '') + '</td>' +
+          '<td class="derecha mono">' + eur(window.Modelo.totalPresupuesto(p)) + '</td>' +
+          '<td>' + escapar(p.estado) + '</td>' +
+          '<td class="centro">' +
+            '<button class="btn btn-sm btn-editar">✏️</button> ' +
+            '<button class="btn btn-sm btn-duplicar">📄</button> ' +
+            '<button class="btn btn-sm btn-peligro btn-eliminar">🗑️</button>' +
+          '</td>';
+
+        tr.querySelector('.btn-editar').addEventListener('click', function () { cargarEnEditor(p); });
+        tr.querySelector('.btn-duplicar').addEventListener('click', function () {
+          var copia = JSON.parse(JSON.stringify(p));
+          copia.id     = window.Storage.uuid();
+          copia.numero = window.Modelo.siguienteNumero();
+          copia.fecha  = hoyISO();
+          copia.estado = 'borrador';
+          var l = window.Modelo.getPresupuestos(); l.push(copia);
+          window.Modelo.setPresupuestos(l);
+          renderListadoPresupuestos();
+          flash('Duplicado como ' + copia.numero);
+        });
+        tr.querySelector('.btn-eliminar').addEventListener('click', function () {
+          if (!confirm('¿Eliminar ' + p.numero + '?')) return;
+          var l = window.Modelo.getPresupuestos().filter(function (x) { return x.id !== p.id; });
+          window.Modelo.setPresupuestos(l);
+          renderListadoPresupuestos();
+          flash('Presupuesto eliminado');
+        });
+        tbody.appendChild(tr);
+      });
+  }
+
+  function nuevoPresupuesto() {
+    cargarEnEditor({
+      id: null,
+      numero: window.Modelo.siguienteNumero(),
+      fecha: hoyISO(),
+      cliente: { nombre: '', contacto: '' },
+      descripcion: '', notas: '', estado: 'borrador', lineas: []
+    });
+    document.getElementById('presu-cliente').focus();
+  }
+
+  function initPresupuestos() {
+    document.getElementById('btnNuevoPresupuesto')?.addEventListener('click', nuevoPresupuesto);
+    document.getElementById('btnGuardarPresupuesto')?.addEventListener('click', guardarPresupuesto);
+    document.getElementById('btnEliminarPresupuesto')?.addEventListener('click', eliminarPresupuesto);
+    document.getElementById('btnVolverListado')?.addEventListener('click', function () {
+      if (presuActual && presuActual.id && !confirm('¿Salir sin guardar los cambios?')) return;
+      volverAlListado();
+    });
+
+    document.querySelectorAll('[data-add]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var g = btn.dataset.add;            // 'ropa' | 'material' | 'mano'
+        var catInicial = (g === 'material') ? 'vinilos' : g;
+        abrirModal(g, catInicial);
+      });
+    });
+
+    renderListadoPresupuestos();
+  }
+
+  // ═══════════════════════════════════════════════════
+  // ARRANQUE
+  // ═══════════════════════════════════════════════════
+
   document.addEventListener('DOMContentLoaded', function () {
     if (window.Modelo) window.Modelo.init();
     initTema();
     initNav();
     initTabsCatalogo();
-    initCatalogoPrendas();
-    initCatalogoEstampacion();
+    initCatalogoRopa();
+    initCatalogoMateriales();
     initCatalogoMano();
+    initModalCatalogo();
+    initPresupuestos();
+
     var st = document.getElementById('status-info');
     if (st) st.textContent = 'ArandaCrafts · v0.1 · ' + new Date().toLocaleDateString('es-ES');
   });

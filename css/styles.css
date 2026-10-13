@@ -272,3 +272,207 @@ label {
   background: var(--bg-elev);
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
+
+/* ═══════════ PRESUPUESTOS — Editor ═══════════ */
+
+.bloque-lineas { padding: 0.9rem 1rem; }
+.bloque-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+.bloque-cabecera h2 { margin: 0; font-size: 1rem; }
+
+.tabla-lineas input,
+.tabla-lineas select {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  color: var(--text);
+}
+.tabla-lineas input:hover,
+.tabla-lineas select:hover { border-color: var(--border); }
+.tabla-lineas input:focus,
+.tabla-lineas select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg-elev);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.tabla-lineas input.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.total-card { padding: 0.9rem 1rem; }
+.total-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border);
+  min-width: 180px;
+}
+.total-label { font-size: 0.8rem; letter-spacing: 0.05em; color: var(--text-soft); }
+.total-valor {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Selector de catálogo inline (datalist fallback: usamos input con list) */
+.tabla-lineas input[list] { padding-right: 1.2rem; }
+
+@media (max-width: 720px) {
+  .total-box { border-left: none; border-top: 2px solid var(--border); padding-left: 0; padding-top: 0.6rem; align-items: flex-start; }
+}
+
+/* Subcategorías del catálogo (acordeón) */
+.subcat {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  overflow: hidden;
+}
+.subcat > summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-soft);
+  transition: background .12s;
+}
+.subcat > summary:hover { background: var(--border); }
+.subcat > summary::-webkit-details-marker { display: none; }
+.subcat > summary::before {
+  content: '▸';
+  display: inline-block;
+  transition: transform .15s;
+  font-size: 0.8rem;
+}
+.subcat[open] > summary::before { transform: rotate(90deg); }
+
+.subcat-body {
+  padding: 0.75rem 1rem 1rem;
+}
+.subcat-body .btn-sm { margin-bottom: 0.6rem; }
+
+/* ═══════════ MODAL: Selector de catálogo ═══════════ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.modal-overlay[hidden] { display: none; }
+
+.modal-caja {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.modal-cabecera h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.modal-cerrar {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 1.1rem; color: var(--text-soft); padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+.modal-cerrar:hover { background: var(--bg-soft); color: var(--text); }
+
+.modal-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.mtab {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  margin-bottom: -1px;
+}
+.mtab:hover { color: var(--text); }
+.mtab.activa { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+.modal-buscador {
+  padding: 0.75rem 1rem 0.5rem;
+}
+.modal-buscador input {
+  width: 100%;
+}
+
+.modal-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.5rem 1rem;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal-lista li {
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.modal-lista li:hover { background: var(--primary-soft); }
+.modal-lista li .nombre { flex: 1; }
+.modal-lista li .precio {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.modal-lista li .unidad {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  background: var(--bg-soft);
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+  margin-left: 0.5rem;
+}
+.modal-lista .vacio {
+  text-align: center;
+  color: var(--text-mute);
+  font-style: italic;
+  padding: 1.5rem 0.75rem;
+  cursor: default;
+}
+.modal-lista .vacio:hover { background: transparent; }
