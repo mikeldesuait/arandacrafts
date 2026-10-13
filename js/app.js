@@ -70,6 +70,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    if (window.Modelo) window.Modelo.init();
     initTema();
     initNav();
     initTabsCatalogo();
