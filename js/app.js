@@ -69,11 +69,104 @@
     }
   }
 
+  // ── Catálogo: Prendas ───────────────────────────────
+
+  function renderPrendas() {
+    var tbody = document.getElementById('tbody-prendas');
+    if (!tbody || !window.Modelo) return;
+
+    var prendas = window.Modelo.getPrendas();
+    tbody.innerHTML = '';
+
+    prendas.forEach(function (p) {
+      var tr = document.createElement('tr');
+      tr.dataset.id = p.id;
+
+      tr.innerHTML =
+        '<td><input type="text" class="inp-nombre" value="' + escapar(p.nombre) + '"></td>' +
+        '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="' + (p.precio || 0) + '"></td>' +
+        '<td class="centro"><div class="acciones-fila">' +
+          '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
+        '</div></td>';
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function escapar(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function initCatalogoPrendas() {
+    var btnNueva   = document.getElementById('btnNuevaPrenda');
+    var btnGuardar = document.getElementById('btnGuardarPrendas');
+    var tbody      = document.getElementById('tbody-prendas');
+    if (!tbody) return;
+
+    renderPrendas();
+
+    if (btnNueva) {
+      btnNueva.addEventListener('click', function () {
+        var tr = document.createElement('tr');
+        tr.dataset.id = window.Storage.uuid();
+        tr.dataset.nueva = '1';
+        tr.innerHTML =
+          '<td><input type="text" class="inp-nombre" placeholder="Nueva prenda..."></td>' +
+          '<td><input type="number" step="0.01" min="0" class="inp-precio num" value="0"></td>' +
+          '<td class="centro"><div class="acciones-fila">' +
+            '<button class="btn btn-sm btn-peligro btn-borrar" title="Eliminar">🗑️</button>' +
+          '</div></td>';
+        tbody.appendChild(tr);
+        tr.querySelector('.inp-nombre').focus();
+      });
+    }
+
+    tbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('.btn-borrar');
+      if (!btn) return;
+      var tr = btn.closest('tr');
+      if (tr) tr.remove();
+    });
+
+    if (btnGuardar) {
+      btnGuardar.addEventListener('click', function () {
+        var filas = tbody.querySelectorAll('tr');
+        var lista = [];
+        filas.forEach(function (tr) {
+          var nombre = tr.querySelector('.inp-nombre').value.trim();
+          var precio = parseFloat(tr.querySelector('.inp-precio').value) || 0;
+          if (!nombre) return;
+          lista.push({
+            id: tr.dataset.id || window.Storage.uuid(),
+            nombre: nombre,
+            precio: Math.round(precio * 100) / 100
+          });
+        });
+
+        window.Modelo.setPrendas(lista);
+        renderPrendas();
+        flash('Prendas guardadas ✓');
+      });
+    }
+  }
+
+  function flash(msg) {
+    var st = document.getElementById('status-info');
+    if (!st) return;
+    var previo = st.textContent;
+    st.textContent = msg;
+    clearTimeout(flash._t);
+    flash._t = setTimeout(function () { st.textContent = previo; }, 2000);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (window.Modelo) window.Modelo.init();
     initTema();
     initNav();
     initTabsCatalogo();
+    initCatalogoPrendas();
     var st = document.getElementById('status-info');
     if (st) st.textContent = 'ArandaCrafts · v0.1 · ' + new Date().toLocaleDateString('es-ES');
   });
