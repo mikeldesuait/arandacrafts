@@ -791,3 +791,685 @@ a:hover { text-decoration: underline; }
   font-size: 0.8rem;
   vertical-align: middle;
 }
+
+/* ═══════════ TABLA DE CLIENTES ═══════════ */
+
+#clientes-tabla input {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  color: var(--text);
+}
+#clientes-tabla input:hover  { border-color: var(--border); }
+#clientes-tabla input:focus  {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg-elev);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* ═══════════ CLIENTES: nueva cabecera ═══════════ */
+
+.clientes-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.clientes-cabecera h1 { margin: 0; }
+
+/* ═══════════ CLIENTES: tarjetas compactas ═══════════ */
+
+#clientes-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.9rem;
+}
+
+.cliente-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  transition: border-color .12s, box-shadow .12s, transform .12s;
+  position: relative;
+}
+.cliente-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  transform: translateY(-1px);
+}
+
+.cliente-card .tipo-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--primary-soft);
+  color: var(--primary);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.cliente-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.cliente-card .cliente-nif {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  margin-bottom: 0.5rem;
+}
+
+.cliente-card .cliente-datos {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+.cliente-card .cliente-datos div { margin-bottom: 0.1rem; }
+.cliente-card .cliente-datos strong {
+  color: var(--text-soft);
+  font-weight: 600;
+  display: inline-block;
+  min-width: 60px;
+}
+
+/* ═══════════ MODAL cliente ═══════════ */
+
+.modal-cliente-caja {
+  max-width: 640px;
+  width: 100%;
+}
+
+.modal-cliente-form {
+  padding: 1rem 1.2rem 1.2rem;
+  overflow-y: auto;
+}
+
+.campos-cliente {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 0.8rem;
+}
+.campos-cliente .campo-full { grid-column: 1 / -1; }
+
+.campos-cliente label {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-soft);
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.campos-cliente input,
+.campos-cliente select {
+  width: 100%;
+}
+
+.modal-cliente-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.modal-cliente-acciones #cl-borrar { margin-right: auto; }
+
+@media (max-width: 520px) {
+  .campos-cliente { grid-template-columns: 1fr; }
+  .campos-cliente .campo-full { grid-column: 1; }
+  .modal-cliente-caja {
+    max-height: 100vh;
+    border-radius: 0;
+    height: 100vh;
+  }
+  .modal-cliente-form { padding: 0.9rem 1rem 1rem; }
+}
+
+/* ═══════════ MODAL CLIENTE — toque de color ═══════════ */
+
+/* Overlay con blur */
+#modal-cliente.modal-overlay {
+  background: rgba(20, 30, 60, .55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: modalFadeIn .15s ease-out;
+}
+
+/* Animación del modal al abrir */
+#modal-cliente .modal-cliente-caja {
+  animation: modalSlideIn .22s cubic-bezier(.2,.9,.3,1.2);
+  border-top: 4px solid var(--primary);
+  box-shadow: 0 20px 60px rgba(0,0,0,.25), 0 8px 20px rgba(0,0,0,.15);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Cabecera con degradado de marca */
+#modal-cliente .modal-cabecera {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
+  padding: 0.9rem 1.1rem;
+  border-radius: 0;
+  border-bottom: none;
+}
+#modal-cliente .modal-cabecera h3 {
+  color: #fff;
+  font-size: 1.08rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+#modal-cliente .modal-cabecera h3::before {
+  content: '👤';
+  font-size: 1.15rem;
+}
+#modal-cliente .modal-cabecera .modal-cerrar {
+  color: #fff;
+  opacity: .85;
+  font-size: 1.15rem;
+}
+#modal-cliente .modal-cabecera .modal-cerrar:hover {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+  opacity: 1;
+}
+
+/* Tipo de cliente: colores distintos */
+#modal-cliente #cl-tipo {
+  background: var(--bg-elev);
+  font-weight: 500;
+}
+
+/* Fondo del formulario */
+#modal-cliente .modal-cliente-form {
+  background: var(--bg-elev);
+}
+
+/* Botones de la barra inferior: separación y jerarquía */
+#modal-cliente .modal-cliente-acciones .btn {
+  min-width: 120px;
+}
+#modal-cliente .modal-cliente-acciones .btn-primario {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  border: none;
+  box-shadow: 0 4px 12px rgba(47,109,246,.35);
+  transition: transform .1s, box-shadow .12s;
+}
+#modal-cliente .modal-cliente-acciones .btn-primario:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(47,109,246,.45);
+}
+
+/* Acento cuando un input está focus dentro del modal */
+#modal-cliente input:focus,
+#modal-cliente select:focus,
+#modal-cliente textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Badges de tipo en la tarjeta */
+.cliente-card .tipo-badge {
+  font-weight: 700;
+}
+.cliente-card .tipo-badge.tipo-particular {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.cliente-card .tipo-badge.tipo-autonomo {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.cliente-card .tipo-badge.tipo-empresa {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* Tarjeta con acento de color a la izquierda */
+.cliente-card {
+  border-left: 3px solid var(--border);
+}
+.cliente-card.tipo-particular { border-left-color: var(--ok); }
+.cliente-card.tipo-autonomo   { border-left-color: var(--warn); }
+.cliente-card.tipo-empresa    { border-left-color: var(--primary); }
+
+/* Animación al añadir nueva tarjeta */
+.cliente-card {
+  animation: cardIn .2s ease-out;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════ MODAL CLIENTE — toque de vida ═══════════ */
+
+/* Tipo de cliente como botones con iconos */
+#cl-tipo-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.tipo-tab {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.5rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  color: var(--text-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all .15s;
+}
+.tipo-tab:hover {
+  border-color: var(--primary);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.tipo-tab.activo {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.tipo-tab .tipo-icon { font-size: 1.4rem; }
+
+/* Secciones del formulario */
+.seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  padding: 0.6rem 0 0.3rem;
+  margin-top: 0.4rem;
+  border-top: 1px dashed var(--border);
+}
+.seccion-titulo:first-child { border-top: none; padding-top: 0; }
+.seccion-icon { font-size: 1rem; }
+
+/* Fondo con degradado suave */
+#modal-cliente .modal-cliente-form {
+  background:
+    radial-gradient(1200px 300px at 0% 0%, var(--primary-soft) 0%, transparent 60%),
+    var(--bg-elev);
+}
+
+/* Inputs más vivos */
+#modal-cliente input,
+#modal-cliente select {
+  padding: 0.5rem 0.6rem;
+  transition: border-color .12s, box-shadow .12s, transform .05s;
+}
+#modal-cliente input:focus,
+#modal-cliente select:focus {
+  transform: scale(1.005);
+}
+
+/* Botón Guardar con brillo */
+#modal-cliente .btn-primario {
+  position: relative;
+  overflow: hidden;
+}
+#modal-cliente .btn-primario::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform .6s;
+}
+#modal-cliente .btn-primario:hover::before {
+  transform: translateX(100%);
+}
+
+/* Cabecera con toque extra */
+#modal-cliente .modal-cabecera {
+  position: relative;
+  overflow: hidden;
+}
+#modal-cliente .modal-cabecera::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,.18) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Animación más suave */
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(24px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 520px) {
+  #cl-tipo-tabs { grid-template-columns: 1fr; }
+  .tipo-tab { flex-direction: row; justify-content: flex-start; padding: 0.55rem 0.7rem; }
+  .tipo-tab .tipo-icon { font-size: 1.1rem; }
+}
+
+/* ═══════════ VISTA STOCK: Grid de Tarjetas ═══════════ */
+
+.grid-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.tarjeta-stock {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+}
+
+/* Efecto hover con elevación y color */
+.tarjeta-stock:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+.tarjeta-stock:hover .tarjeta-icono {
+  transform: scale(1.15);
+  color: var(--primary);
+}
+
+.tarjeta-icono {
+  font-size: 2.5rem;
+  transition: transform .2s;
+  /* Un halo de color suave detrás del icono */
+  background: var(--primary-soft);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.tarjeta-titulo {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.tarjeta-desc {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+/* Tarjeta especial para "+ Añadir" */
+.tarjeta-add {
+  background: transparent;
+  border: 2px dashed var(--border);
+  box-shadow: none;
+}
+.tarjeta-add:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.tarjeta-add .tarjeta-icono {
+  background: transparent;
+  font-size: 2rem;
+}
+
+/* Botón de volver atrás */
+.btn-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+.btn-volver:hover {
+  background: var(--bg-soft);
+  color: var(--text);
+}
+
+/* Botón de borrar dentro de las tarjetas de stock */
+.tarjeta-stock {
+  /* ya tiene position: relative de antes */
+}
+
+.btn-borrar-tarjeta {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--text-mute);
+  opacity: 0;
+  transition: opacity .15s, color .15s, transform .15s;
+  padding: 0.2rem;
+  border-radius: var(--radius-sm);
+  z-index: 10;
+}
+
+.tarjeta-stock:hover .btn-borrar-tarjeta {
+  opacity: 1;
+}
+
+.btn-borrar-tarjeta:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+  transform: scale(1.1);
+}
+
+/* En móvil/tablet, que se vea siempre (no hay hover) */
+@media (max-width: 768px) {
+  .btn-borrar-tarjeta { opacity: 1; }
+}
+
+/* Selector de emojis */
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+}
+
+.emoji-btn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 1.4rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .1s;
+}
+
+.emoji-btn:hover {
+  border-color: var(--primary);
+  transform: scale(1.1);
+}
+
+.emoji-btn.activo {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+/* Selector de emojis más grande y con scroll */
+.emoji-picker {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* Grupo de botones (editar / borrar) en la tarjeta */
+.card-tools {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.15rem;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 10;
+}
+
+.tarjeta-stock:hover .card-tools {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .card-tools { opacity: 1; }
+}
+
+.card-tools .btn-borrar-tarjeta {
+  position: static;  /* Los botones se colocan con flex en el contenedor */
+  opacity: 1;
+}
+
+/* Buscador de emojis */
+.emoji-picker-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.emoji-search {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+.emoji-search input {
+  flex: 1;
+}
+.emoji-search .btn {
+  white-space: nowrap;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.7rem;
+}
+
+/* Contenedor de líneas dinámico */
+#contenedor-lineas-dinamico {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bloque-lineas {
+  animation: fadeInBlock .2s ease-out;
+}
+
+@keyframes fadeInBlock {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ajuste para cuando hay muchas pestañas en el modal */
+#modal-tabs {
+  overflow-x: auto;
+  white-space: nowrap;
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+}
+#modal-tabs .mtab {
+  flex-shrink: 0;
+}
+
+/* Mejorar el campo de emoji personalizado */
+#mp-icono-custom {
+  background: var(--bg-elev);
+  color: var(--text);
+  transition: border-color .12s, box-shadow .12s;
+}
+#mp-icono-custom:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Destacar el precio final */
+.inp-precio-final {
+  background: var(--bg-soft) !important;
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Mejorar el campo de emoji personalizado en TODOS los modales */
+#mc-icono-custom,
+#mp-icono-custom {
+  display: block;
+  width: 100% !important;
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.8rem !important;
+  font-size: 1rem !important;
+  text-align: left !important;
+  background: var(--bg-elev) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  transition: border-color .12s, box-shadow .12s;
+}
+
+#mc-icono-custom:focus,
+#mp-icono-custom:focus {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-soft) !important;
+}

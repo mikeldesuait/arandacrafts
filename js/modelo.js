@@ -10,7 +10,11 @@ window.Modelo = (function () {
     vinilos:      'catalogo:materiales:vinilos',
     dtf:          'catalogo:materiales:dtf',
     sublimacion:  'catalogo:materiales:sublimacion',
-    mano:         'catalogo:mano',
+    mano:         'catalogo:mano_obra',
+    clientes:     'clientes',
+    stock_estructura: 'stock:estructura',
+    registro_entradas: 'stock:registro',
+    cosas_comunes: 'stock:cosas_comunes',
     presupuestos: 'presupuestos',
     emisor:       'emisor',
     contador:     'contador'
@@ -24,45 +28,13 @@ window.Modelo = (function () {
 
   // ── Catálogos iniciales ────────────────────────────
 
-  var ROPA_INICIAL = [
-    { nombre: 'Camiseta algodón Roly',           unidad: 'ud', precio: 3.50 },
-    { nombre: 'Camiseta poliéster técnica Roly', unidad: 'ud', precio: 4.20 },
-    { nombre: 'Pantalón largo laboral Roly',     unidad: 'ud', precio: 15.00 },
-    { nombre: 'Pantalón corto deportivo Roly',   unidad: 'ud', precio: 6.50 },
-    { nombre: 'Sudadera con capucha Roly',       unidad: 'ud', precio: 14.00 },
-    { nombre: 'Sudadera sin capucha Roly',       unidad: 'ud', precio: 12.00 }
-  ];
+  var ROPA_INICIAL = [];
 
-  var VINILOS_INICIAL = [
-    { nombre: 'Vinilo Flex PU (poliuretano)', unidad: 'metro', precio: 6.00 },
-    { nombre: 'Vinilo Flex PU mate',          unidad: 'metro', precio: 6.50 },
-    { nombre: 'Vinilo Flex PU brillo',        unidad: 'metro', precio: 6.50 },
-    { nombre: 'Vinilo Glitter',               unidad: 'metro', precio: 9.00 },
-    { nombre: 'Vinilo Metalizado',            unidad: 'metro', precio: 10.00 },
-    { nombre: 'Vinilo Reflectante',           unidad: 'metro', precio: 12.00 },
-    { nombre: 'Vinilo Holográfico',           unidad: 'metro', precio: 11.00 },
-    { nombre: 'Vinilo Flock (terciopelo)',    unidad: 'metro', precio: 8.50 },
-    { nombre: 'Vinilo Fluorescente',          unidad: 'metro', precio: 9.50 },
-    { nombre: 'Vinilo Puff (relieve)',        unidad: 'metro', precio: 7.50 },
-    { nombre: 'Vinilo Luminiscente (glow)',   unidad: 'metro', precio: 13.00 }
-  ];
+  var VINILOS_INICIAL = [];
 
-  var DTF_INICIAL = [
-    { nombre: 'Plancha DTF A5',             unidad: 'plancha', precio: 1.50 },
-    { nombre: 'Plancha DTF A4',             unidad: 'plancha', precio: 2.20 },
-    { nombre: 'Plancha DTF A3',             unidad: 'plancha', precio: 3.80 },
-    { nombre: 'Plancha DTF A2',             unidad: 'plancha', precio: 6.50 },
-    { nombre: 'Film DTF (rollo 30cm)',      unidad: 'metro',    precio: 2.00 },
-    { nombre: 'Poliamida (polvo adhesivo)', unidad: 'kg',       precio: 25.00 }
-  ];
+  var DTF_INICIAL = [];
 
-  var SUBLIMACION_INICIAL = [
-    { nombre: 'Papel sublimación A4',                 unidad: 'hoja', precio: 0.15 },
-    { nombre: 'Papel sublimación A3',                 unidad: 'hoja', precio: 0.30 },
-    { nombre: 'Tinta sublimación (set 4 colores)',    unidad: 'ud',   precio: 45.00 },
-    { nombre: 'Plancha sublimación taza',             unidad: 'ud',   precio: 1.50 },
-    { nombre: 'Plancha sublimación textil poliéster', unidad: 'ud',   precio: 2.00 }
-  ];
+  var SUBLIMACION_INICIAL = [];
 
   var MANO_INICIAL = [
     { nombre: 'Diseño personalizado',    tipo: 'hora',   precio: 25.00 },
@@ -72,6 +44,162 @@ window.Modelo = (function () {
     { nombre: 'Envío península',         tipo: 'fijo',   precio: 5.90 },
     { nombre: 'Envío Baleares',          tipo: 'fijo',   precio: 8.50 }
   ];
+
+
+  // ── Stock (Estructura de Carpetas) ─────────────────
+
+  var STOCK_INICIAL = [
+    {
+      id: 's-ropa', nombre: 'Ropa', icono: '👕', categorias: [
+        { id: 's-camisetas', nombre: 'Camisetas', icono: '👕' },
+        { id: 's-sudaderas', nombre: 'Sudaderas', icono: '🧥' },
+        { id: 's-pantalones', nombre: 'Pantalones', icono: '👖' }
+      ]
+    },
+    {
+      id: 's-vinilos', nombre: 'Vinilos', icono: '🎨', categorias: [
+        { id: 's-vinilo-textil', nombre: 'Textil', icono: '🧵' },
+        { id: 's-vinilo-permanente', nombre: 'Permanente', icono: '💎' }
+      ]
+    },
+    {
+      id: 's-personalizables', nombre: 'Personalizables', icono: '✨', categorias: [
+        { id: 's-botellas', nombre: 'Botellas', icono: '🍶' },
+        { id: 's-tazas', nombre: 'Tazas', icono: '☕' },
+        { id: 's-llaveros', nombre: 'Llaveros', icono: '🔑' },
+        { id: 's-peluches', nombre: 'Peluches', icono: '🧸' }
+      ]
+    }
+  ];
+
+  function getStockEstructura() {
+    var datos = window.Storage.get(K.stock_estructura, null);
+    if (!datos) {
+      datos = STOCK_INICIAL;
+      window.Storage.set(K.stock_estructura, datos);
+    }
+    return datos;
+  }
+
+  function setStockEstructura(datos) {
+    window.Storage.set(K.stock_estructura, datos);
+  }
+
+
+  // ── Productos (Dentro de Stock) ─────────────────────
+
+  function getProductos(catId, subcatId) {
+    var est = getStockEstructura();
+    var cat = est.find(function(c){ return c.id === catId; });
+    if (!cat || !cat.categorias) return [];
+    var sub = cat.categorias.find(function(c){ return c.id === subcatId; });
+    if (!sub) return [];
+    return sub.productos || [];
+  }
+
+  function setProductos(catId, subcatId, lista) {
+    var est = getStockEstructura();
+    var cat = est.find(function(c){ return c.id === catId; });
+    if (!cat || !cat.categorias) return;
+    var sub = cat.categorias.find(function(c){ return c.id === subcatId; });
+    if (!sub) return;
+    
+    sub.productos = lista;
+    setStockEstructura(est);
+  }
+
+  // Obtener TODOS los productos de la app (para el desplegable de presupuestos)
+  function getTodosLosProductos() {
+    var est = getStockEstructura();
+    var todos = [];
+    est.forEach(function(cat) {
+      if (!cat.categorias) return;
+      cat.categorias.forEach(function(sub) {
+        if (!sub.productos) return;
+        sub.productos.forEach(function(p) {
+          todos.push({
+            id: p.id,
+            nombre: p.nombre,
+            precio: p.precio,
+            coste: p.coste,
+            iva: p.iva !== undefined ? p.iva : 21,
+            precio_tipo: p.precio_tipo || 'sin_iva',
+            notas: p.notas,
+            icono: p.icono || '📦',
+            variantes: p.variantes || [],
+            tipo: cat.nombre,
+            categoria: sub.nombre,
+            catId: cat.id,
+            subcatId: sub.id
+          });
+        });
+      });
+    });
+    return todos;
+  }
+
+
+  // ── Registro de ropa de clientes ────────────────────
+
+  function getRopaClientes() {
+    return window.Storage.get(K.registro_entradas, []);
+  }
+
+  function setRopaClientes(lista) {
+    window.Storage.set(K.registro_entradas, lista);
+  }
+
+  function addRopaCliente(entrada) {
+    var lista = getRopaClientes();
+    lista.push(entrada);
+    setRopaClientes(lista);
+  }
+
+
+  // ── Cosas Comunes (Botones rápidos personalizables) ──
+
+  var COSAS_COMUNES_INICIALES = [
+    { nombre: 'Camisetas', icono: '👕' },
+    { nombre: 'Sudaderas', icono: '🧥' },
+    { nombre: 'Pantalones cortos', icono: '🩳' },
+    { nombre: 'Pantalones largos', icono: '👖' },
+    { nombre: 'Tazas', icono: '☕' },
+    { nombre: 'Botellas', icono: '🍶' },
+    { nombre: 'Llaveros', icono: '🔑' },
+    { nombre: 'Peluches', icono: '🧸' }
+  ];
+
+  function getCosasComunes() {
+    var data = window.Storage.get(K.cosas_comunes, null);
+    if (!data) {
+      // Primera vez, cargamos las por defecto
+      window.Storage.set(K.cosas_comunes, COSAS_COMUNES_INICIALES);
+      return COSAS_COMUNES_INICIALES;
+    }
+    return data;
+  }
+
+  function setCosasComunes(lista) {
+    window.Storage.set(K.cosas_comunes, lista);
+  }
+
+
+  // ── Mano de Obra (Independiente) ────────────────────
+
+  
+
+  function getManoObra() {
+    var data = window.Storage.get(K.mano, null);
+    if (!data) {
+      data = MANO_INICIAL;
+      window.Storage.set(K.mano, data);
+    }
+    return data;
+  }
+
+  function setManoObra(lista) {
+    window.Storage.set(K.mano, lista);
+  }
 
   // ── Utilidades ─────────────────────────────────────
 
@@ -133,6 +261,14 @@ window.Modelo = (function () {
 
   function getMateriales() {
     return [].concat(getVinilos(), getDtf(), getSublimacion());
+  }
+
+  function getClientes()      { return window.Storage.get(K.clientes, []); }
+  function setClientes(l)     { window.Storage.set(K.clientes, l); }
+
+  function buscarClientePorId(id) {
+    if (!id) return null;
+    return getClientes().find(function (c) { return c.id === id; }) || null;
   }
 
   // ── Presupuestos ───────────────────────────────────
@@ -202,9 +338,10 @@ window.Modelo = (function () {
   function init() {
     migrarSiHaceFalta();
     var r = getRopa();
+    var c = getClientes();
     var v = getVinilos(), d = getDtf(), s = getSublimacion(), m = getMano();
     console.log('[ArandaCrafts] Catálogo →',
-      r.length + ' ropa, ' + v.length + ' vinilos, ' + d.length + ' DTF, ' +
+      c.length + ' clientes, ' + r.length + ' ropa, ' + v.length + ' vinilos, ' + d.length + ' DTF, ' +
       s.length + ' sublimación, ' + m.length + ' mano de obra.');
   }
 
@@ -216,6 +353,13 @@ window.Modelo = (function () {
     getSublimacion: getSublimacion, setSublimacion: setSublimacion,
     getMateriales: getMateriales,
     getMano: getMano,               setMano: setMano,
+    getStockEstructura: getStockEstructura, setStockEstructura: setStockEstructura,
+    getManoObra: getManoObra, setManoObra: setManoObra,
+    getRopaClientes: getRopaClientes, setRopaClientes: setRopaClientes, addRopaCliente: addRopaCliente,
+    getCosasComunes: getCosasComunes, setCosasComunes: setCosasComunes,
+    getProductos: getProductos, setProductos: setProductos, getTodosLosProductos: getTodosLosProductos,
+    getClientes: getClientes,       setClientes: setClientes,
+    buscarClientePorId: buscarClientePorId,
     getPresupuestos: getPresupuestos, setPresupuestos: setPresupuestos,
     getEmisor: getEmisor,           setEmisor: setEmisor,
     siguienteNumero: siguienteNumero,
