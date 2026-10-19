@@ -4955,3 +4955,125 @@ window.addEventListener('hashchange', function() {
     window.renderDashboard();
   }
 });
+
+/* PARCHE: REORDENAR EL MENÚ DE NAVEGACIÓN (V2) */
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    var nav = document.querySelector('.nav') || document.querySelector('nav');
+    if (!nav) return;
+
+    // El orden exacto que has pedido
+    var ordenDeseado = [
+      'inicio',
+      'registro',
+      'presupuestos',
+      'taller',
+      'stock',       // Productos
+      'inventario',
+      'trabajos',
+      'clientes',
+      'ajustes'
+    ];
+
+    function getBoton(vista) {
+      return nav.querySelector('.nav-btn[data-vista="' + vista + '"]');
+    }
+
+    var botones = [];
+    ordenDeseado.forEach(function(vista) {
+      var btn = getBoton(vista);
+      if (btn) botones.push(btn);
+    });
+
+    // Añadimos cualquier botón huérfano al final (por seguridad)
+    nav.querySelectorAll('.nav-btn').forEach(function(btn) {
+      if (!botones.includes(btn)) {
+        botones.push(btn);
+      }
+    });
+
+    // Volvemos a insertarlos en el DOM
+    botones.forEach(function(btn) {
+      nav.appendChild(btn);
+    });
+
+    console.log('✅ Menú de navegación reordenado al gusto del jefe.');
+  }, 300);
+});
+
+/* PARCHE: ARREGLAR MENÚ HAMBURGUESA EN MÓVIL */
+document.addEventListener('DOMContentLoaded', function() {
+  var nav = document.querySelector('.nav') || document.querySelector('nav');
+  var btnHamburguesa = document.querySelector('.menu-toggle') || document.querySelector('.hamburger') || document.querySelector('.nav-toggle');
+  
+  if (btnHamburguesa && nav) {
+    // Al hacer clic en las tres líneas, forzamos que el menú se muestre u oculte
+    btnHamburguesa.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Si el menú tiene la clase 'activo' o 'show', la quitamos, si no, la ponemos
+      if (nav.classList.contains('activo') || nav.classList.contains('show')) {
+        nav.classList.remove('activo', 'show');
+        nav.style.display = ''; // Volver al CSS por defecto
+      } else {
+        nav.classList.add('activo', 'show');
+        nav.style.display = 'flex'; // Forzar visualización
+        nav.style.flexDirection = 'column'; // Para que se apilen en vertical
+        nav.style.position = 'absolute'; // Para que flote sobre el contenido
+        nav.style.top = '60px'; // Justo debajo de la barra
+        nav.style.background = 'var(--bg)';
+        nav.style.width = '100%';
+        nav.style.zIndex = '1000';
+      }
+    });
+  }
+});
+
+/* PARCHE: MENÚ HAMBURGUESA (btnMenu) EN MÓVIL */
+document.addEventListener('DOMContentLoaded', function() {
+  var btnMenu = document.getElementById('btnMenu');
+  var nav = document.querySelector('.nav') || document.querySelector('nav');
+  
+  if (btnMenu && nav) {
+    btnMenu.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Alternar la clase 'mostrar-menu' en el nav
+      nav.classList.toggle('mostrar-menu');
+      
+      // Si se abre, aplicar estilos en línea para forzar la visualización
+      if (nav.classList.contains('mostrar-menu')) {
+        nav.style.display = 'flex';
+        nav.style.flexDirection = 'column';
+        nav.style.position = 'absolute';
+        nav.style.top = '60px';
+        nav.style.left = '0';
+        nav.style.width = '100%';
+        nav.style.background = 'var(--bg)';
+        nav.style.zIndex = '1000';
+        nav.style.padding = '1rem';
+        nav.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+      } else {
+        nav.style.display = '';
+        nav.style.position = '';
+        nav.style.flexDirection = '';
+        nav.style.padding = '';
+        nav.style.boxShadow = '';
+      }
+    });
+
+    // Cerrar el menú al hacer clic en una opción
+    nav.querySelectorAll('.nav-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (window.innerWidth <= 900) {
+          nav.classList.remove('mostrar-menu');
+          nav.style.display = '';
+          nav.style.position = '';
+          nav.style.flexDirection = '';
+          nav.style.padding = '';
+          nav.style.boxShadow = '';
+        }
+      });
+    });
+  }
+});
