@@ -612,7 +612,7 @@
             <div class="emoji-search">
               <input type="text" id="mp-buscar-emoji" placeholder="Buscar icono..." style="flex:1;">
               <button type="button" class="btn btn-primario" id="mp-emoji-nativo" title="Abrir teclado del sistema">⌨️ Abrir teclado</button>
-              <a href="#" id="mp-emoji-web" class="btn" style="white-space:nowrap; font-size:0.85rem; padding:0.4rem 0.7rem;">🌐 Ver más</a>
+              <a href="https://emojipedia.org/es/" target="_blank" id="mp-emoji-web" class="btn" style="white-space:nowrap; font-size:0.85rem; padding:0.4rem 0.7rem;">🌐 Ver más</a>
             </div>
             <div class="emoji-picker" id="mp-emojis">
               <!-- Los iconos se cargan dinámicamente con JS -->
@@ -652,6 +652,14 @@
 
         <!-- SECCIÓN DE VARIANTES (Color + Talla) -->
         <div id="mp-seccion-variantes" class="campo-full" style="margin-top: 1rem; display: none; background: var(--bg-soft); padding: 1rem; border-radius: var(--radius-sm);">
+    <div style="margin-bottom: 1rem;">
+      <label style="font-weight:bold; font-size:0.85rem; margin-bottom:0.3rem; display:block;">Tipo de variante:</label>
+        <option value="ninguna">Sin variantes (Producto simple)</option>
+        <option value="color">Solo Color</option>
+        <option value="color_talla">Color y Talla (Ropa)</option>
+      </select>
+    </div>
+    
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <label style="font-weight: 600; margin: 0;">🧬 Variantes (Color + Talla)</label>
             <small style="color: var(--text-soft);">Stock total: <span id="mp-stock-total" style="font-weight:bold;">0</span></small>
@@ -831,6 +839,9 @@
 <footer class="statusbar">
     <span id="status-info">ArandaCrafts · v0.1</span>
   </footer>
+
+<script src="js/manual.js"></script>
+<script src="js/ayuda-contextual.js"></script>
 </body>
 
 </html>
@@ -873,3 +884,183 @@
   .top-venta-stats { text-align: right; }
   .top-venta-cant { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
 </style>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var ayudas = {
+    'inicio': 'Panel de control: Resumen de clientes, cobros, pendientes, inversión en stock, pedidos urgentes y ventas.',
+    'registro': 'Registro de entrada: Apunta el material que te traen los clientes para vincularlo a presupuestos.',
+    'presupuestos': 'Presupuestos: Crea documentos, añade líneas, gestiona estados y controla si están cobrados.',
+    'taller': 'Tablero de Taller: Pedidos aceptados organizados por urgencia (semáforo de fechas de entrega).',
+    'stock': 'Productos (Stock): Catálogo por carpetas. Gestiona productos simples o con variantes (Color y Talla).',
+    'inventario': 'Inventario: Valor total del almacén (Stock x Precio de Coste) y número de unidades.',
+    'trabajos': 'Trabajos: Tarifas de servicios (horas, unidades, envíos) para añadir a los presupuestos.',
+    'clientes': 'Clientes: Base de datos con historial de deudas y documentos clicables.',
+    'ajustes': 'Ajustes: Datos fiscales, backup, tema claro/oscuro y zona peligrosa.'
+  };
+
+  // Añadimos estilos para el tooltip
+  var style = document.createElement('style');
+  style.innerHTML = `
+    .btn-ayuda-seccion {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--text-soft);
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: help;
+      margin-left: auto; /* Empuja a la derecha */
+      transition: all 0.2s;
+    }
+    .btn-ayuda-seccion:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    
+    .ayuda-tooltip {
+      position: absolute;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      padding: 0.8rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--text);
+      z-index: 1000;
+      max-width: 250px;
+      display: none;
+      line-height: 1.4;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Recorremos las secciones
+  document.querySelectorAll('.vista').forEach(function(vista) {
+    var id = vista.id.replace('vista-', '');
+    var textoAyuda = ayudas[id];
+    if (!textoAyuda) return;
+
+    // Buscamos el contenedor de la cabecera (para alinear el icono a la derecha)
+    var cabecera = vista.querySelector('.clientes-cabecera') || vista.querySelector('.cabecera-vista') || vista.querySelector('h1') || vista.querySelector('h2');
+    
+    if (cabecera) {
+      // Creamos un contenedor flex para el título y el icono
+      var headerWrapper = cabecera;
+      
+      // Si es un h1 o h2 directo, lo envolvemos
+      if (cabecera.tagName === 'H1' || cabecera.tagName === 'H2') {
+          var div = document.createElement('div');
+          div.style.cssText = 'display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom: 1rem;';
+          cabecera.parentNode.insertBefore(div, cabecera);
+          div.appendChild(cabecera);
+          headerWrapper = div;
+      } else {
+          // Si ya es un contenedor (como .clientes-cabecera), nos aseguramos de que sea flex
+          headerWrapper.style.display = 'flex';
+          headerWrapper.style.alignItems = 'center';
+          headerWrapper.style.justifyContent = 'space-between';
+      }
+
+      // Creamos el botón
+      var btnAyuda = document.createElement('button');
+      btnAyuda.innerHTML = '?';
+      btnAyuda.className = 'btn-ayuda-seccion';
+      
+      // Creamos el tooltip
+      var tooltip = document.createElement('div');
+      tooltip.className = 'ayuda-tooltip';
+      tooltip.textContent = textoAyuda;
+      
+      // Lo metemos en el body para que flote por encima de todo
+      document.body.appendChild(tooltip);
+
+      // Eventos para mostrar/ocultar el tooltip
+      btnAyuda.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var rect = btnAyuda.getBoundingClientRect();
+        tooltip.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+        tooltip.style.left = (rect.right + window.scrollX - 250) + 'px'; // Alineado a la derecha
+        
+        if (tooltip.style.display === 'block') {
+          tooltip.style.display = 'none';
+        } else {
+          tooltip.style.display = 'block';
+        }
+      };
+
+      // Ocultar al hacer clic fuera
+      document.addEventListener('click', function(e) {
+        if (e.target !== btnAyuda && !tooltip.contains(e.target)) {
+          tooltip.style.display = 'none';
+        }
+      });
+
+      headerWrapper.appendChild(btnAyuda);
+    }
+  });
+  console.log("✅ Botones de ayuda discretos insertados.");
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Buscamos la sección de presupuestos
+  var vistaPresu = document.getElementById('vista-presupuestos');
+  if (!vistaPresu) return;
+
+  // Buscamos el contenedor de la barra de acciones (donde está el botón de nuevo presupuesto)
+  var barraAcciones = vistaPresu.querySelector('.barra-acciones');
+  
+  if (barraAcciones && !barraAcciones.querySelector('.btn-ayuda-presu')) {
+    var btnAyuda = document.createElement('button');
+    btnAyuda.innerHTML = '?';
+    btnAyuda.className = 'btn-ayuda-seccion btn-ayuda-presu';
+    btnAyuda.title = "Ayuda sobre Presupuestos";
+    
+    // Estilos para que encaje en la barra
+    btnAyuda.style.cssText = 'margin-left: auto; margin-right: 0.5rem; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; color: var(--text-soft);';
+    
+    // Creamos el tooltip
+    var tooltip = document.createElement('div');
+    tooltip.style.cssText = 'position: absolute; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0.8rem; border-radius: 6px; font-size: 0.85rem; color: var(--text); z-index: 1000; max-width: 250px; display: none; line-height: 1.4;';
+    tooltip.textContent = 'Presupuestos: Crea documentos, añade líneas, gestiona estados y controla si están cobrados o pendientes. Puedes imprimir en PDF.';
+    document.body.appendChild(tooltip);
+
+    // Lógica para mostrar/ocultar
+    btnAyuda.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      var rect = btnAyuda.getBoundingClientRect();
+      tooltip.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+      tooltip.style.left = (rect.right + window.scrollX - 250) + 'px';
+      
+      if (tooltip.style.display === 'block') {
+        tooltip.style.display = 'none';
+      } else {
+        tooltip.style.display = 'block';
+      }
+    };
+
+    document.addEventListener('click', function(e) {
+      if (e.target !== btnAyuda && !tooltip.contains(e.target)) {
+        tooltip.style.display = 'none';
+      }
+    });
+
+    // Lo metemos en la barra de acciones
+    barraAcciones.appendChild(btnAyuda);
+    console.log("✅ Botón de ayuda añadido a Presupuestos.");
+  }
+});
+</script>
+
+
+
+

@@ -439,7 +439,7 @@ function agregarFilaVariante(color, talla, cantidad) {
   if (!tbody) return;
 
   var COLORES = ['Blanco', 'Negro', 'Rojo', 'Azul', 'Verde', 'Gris', 'Amarillo', 'Naranja', 'Rosa', 'Morado'];
-  var TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Única'];
+  var TALLAS = ['Sin talla', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Única'];
 
   var tr = document.createElement('tr');
   tr.innerHTML =
@@ -532,7 +532,7 @@ if (_abrirProdOrig) {
     if (!tbody || !seccion) return;
 
     tbody.innerHTML = '';
-    var esRopa = (window._catIdActual === 's-ropa') || (prod && prod.es_ropa);
+    var esRopa = true; // Forzado para todos los productos
     
     if (esRopa) {
       seccion.style.display = 'block';
@@ -1647,7 +1647,7 @@ window.guardarTrabajos = function() {
     }
 
     // 2. Segunda confirmación con palabra clave
-    var palabra = prompt('Para confirmar, escribe la palabra BORRAR (en mayúsculas):');
+    var palabra = null;
     if (palabra !== 'BORRAR') {
       alert('Cancelado. No se ha borrado nada.');
       return;
@@ -1971,7 +1971,7 @@ window.guardarTrabajos = function() {
       btnAdd.parentNode.replaceChild(nuevoBtn, btnAdd);
 
       nuevoBtn.onclick = function() {
-        var tipo = prompt('¿Qué quieres añadir?\n\n1) Producto\n2) Trabajo');
+        var tipo = null;
         if (tipo === '1') window.abrirModal('producto');
         else if (tipo === '2') window.abrirModal('trabajo');
       };
@@ -3963,7 +3963,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Función para crear una fila de variante
   function crearFilaVariante(tbody, color, talla, cantidad) {
     var COLORES = ['Blanco', 'Negro', 'Rojo', 'Azul', 'Verde', 'Gris'];
-    var TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    var TALLAS = ['Sin talla', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
     
     var tr = document.createElement('tr');
     
@@ -5077,3 +5077,214 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+/* PARCHE: OCULTAR LEYENDA ESTÁTICA EN EL MODAL */
+(function() {
+  var _abrirProdOrig = window.abrirModalProducto;
+  window.abrirModalProducto = function(prod) {
+    _abrirProdOrig(prod);
+    var seccion = document.getElementById("mp-seccion-variantes");
+    if (seccion) {
+      var hijos = seccion.childNodes;
+      for (var i = 0; i < hijos.length; i++) {
+        var hijo = hijos[i];
+        if (hijo.nodeType === 3 && hijo.textContent.includes("Tipo de variante:")) {
+          hijo.textContent = "";
+        }
+        if (hijo.nodeType === 1 && hijo.innerHTML.includes("Sin variantes (Producto simple)")) {
+          hijo.style.display = "none";
+        }
+      }
+    }
+  };
+})();
+/* PARCHE: HACER EL MODAL MAS GRANDE */
+(function() {
+  var _abrirProdOrig = window.abrirModalProducto;
+  window.abrirModalProducto = function(prod) {
+    _abrirProdOrig(prod);
+    var modal = document.getElementById("modal-producto");
+    if (modal) {
+      var contenido = modal.querySelector(".modal-contenido") || modal.querySelector(".modal-content") || modal.firstElementChild;
+      if (contenido) {
+        contenido.style.maxWidth = "900px";
+        contenido.style.width = "95%";
+      }
+    }
+  };
+})();
+/* PARCHE: ARREGLAR BOTON DE EMOJI DE INTERNET */
+document.addEventListener("click", function(e) {
+  if (e.target && e.target.id === "mp-btn-emoji-url") {
+    var url = null;
+    if (url) {
+      var inp = document.getElementById("mp-icono");
+      if (inp) inp.value = url;
+    }
+  }
+});
+/* PARCHE: ARREGLAR BOTON VER MAS EMOJIS */
+document.addEventListener("click", function(e) {
+  if (e.target && (e.target.textContent.includes("Ver más") || e.target.id === "mp-btn-ver-mas")) {
+    var url = null;
+    if (url) {
+      var inp = document.getElementById("mp-icono");
+      if (inp) inp.value = url;
+    }
+  }
+});
+
+/* PARCHE DEFINITIVO: LEER EMOJI CUSTOM AL GUARDAR */
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'mp-guardar') {
+    var customEmoji = document.getElementById('mp-icono-custom');
+    var inputIcono = document.getElementById('mp-icono');
+    
+    // Si la caja de texto tiene algo, lo forzamos en el input que lee el sistema
+    if (customEmoji && customEmoji.value.trim() !== '') {
+      if (inputIcono) inputIcono.value = customEmoji.value.trim();
+    }
+  }
+}, true); // El 'true' hace que se ejecute ANTES que el guardado original
+
+/* ═══════════════════════════════════════════════════
+   FIX: PERMITIR DECIMALES EN CANTIDADES Y PRECIOS
+   ═══════════════════════════════════════════════════ */
+(function() {
+  // Guardamos la función original por si acaso
+  var _renderOrig = window.renderLineasEditor;
+
+  window.renderLineasEditor = function() {
+    var contProd = document.getElementById('contenedor-productos');
+    var contTrab = document.getElementById('contenedor-trabajos');
+    if (!contProd || !contTrab) return;
+
+    contProd.innerHTML = '';
+    contTrab.innerHTML = '';
+
+    var totalBase = 0;
+    var totalIva = 0;
+    var granTotal = 0;
+
+    function pintarLinea(linea, index) {
+      var div = document.createElement('div');
+      div.className = 'card';
+      div.style.padding = '0.5rem';
+      div.style.marginBottom = '0.5rem';
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.gap = '0.5rem';
+
+      var cantidad = parseFloat(linea.cantidad) || 0;
+      var precioConIva = parseFloat(linea.precio) || 0;
+      var iva = parseFloat(linea.iva) || 0;
+      var descuento = parseFloat(linea.descuento) || 0;
+
+      var totalLinea = cantidad * precioConIva;
+      if (descuento > 0) totalLinea = totalLinea * (1 - (descuento / 100));
+      totalLinea = Math.round((totalLinea + Number.EPSILON) * 100) / 100;
+
+      var baseLinea = totalLinea / (1 + (iva / 100));
+      var ivaLinea = totalLinea - baseLinea;
+
+      baseLinea = Math.round((baseLinea + Number.EPSILON) * 100) / 100;
+      ivaLinea = Math.round((totalLinea - baseLinea + Number.EPSILON) * 100) / 100;
+
+      totalBase += baseLinea;
+      totalIva += ivaLinea;
+      granTotal += totalLinea;
+
+      // IMPORTANTE: Usamos type="text" para que no salten las flechitas y se pueda escribir la coma
+      div.innerHTML = 
+        '<div style="flex: 2; min-width: 150px;">' +
+          '<input type="text" class="inp-con" value="' + (linea.concepto || '') + '" placeholder="Concepto" style="width:100%;">' +
+        '</div>' +
+        '<div style="flex: 1; min-width: 60px;">' +
+          '<input type="text" class="inp-cant" value="' + cantidad + '" placeholder="Cant" style="width:100%; text-align:right;">' +
+        '</div>' +
+        '<div style="flex: 1; min-width: 80px;">' +
+          '<input type="text" class="inp-precio" value="' + precioConIva + '" placeholder="Precio" style="width:100%; text-align:right;">' +
+        '</div>' +
+        '<div style="flex: 0 0 60px;">' +
+          '<input type="text" class="inp-iva" value="' + iva + '" placeholder="IVA%" style="width:100%; text-align:right;">' +
+        '</div>' +
+        '<div style="flex: 1; min-width: 100px; text-align:right; font-weight:bold; padding: 0.4rem; background: var(--bg-soft); border-radius: 4px;">' + 
+          window.eur(totalLinea) + 
+        '</div>' +
+        '<div>' +
+          '<button class="btn btn-sm btn-peligro btn-eliminar-linea">🗑️</button>' +
+        '</div>';
+
+      var inputCant = div.querySelector('.inp-cant');
+      var inputPrecio = div.querySelector('.inp-precio');
+      var inputIva = div.querySelector('.inp-iva');
+      var inputCon = div.querySelector('.inp-con');
+
+      // LA MAGIA: Escuchamos el evento 'change' (cuando se sale del campo o se pulsa Enter)
+      // En lugar de 'input' (que es cada tecla). Así no se redibuja mientras escribes.
+      function actualizarDatos() {
+        linea.cantidad = parseFloat(inputCant.value.replace(',', '.')) || 0;
+        linea.precio = parseFloat(inputPrecio.value.replace(',', '.')) || 0;
+        linea.iva = parseFloat(inputIva.value.replace(',', '.')) || 0;
+        linea.concepto = inputCon.value;
+        window.renderLineasEditor(); 
+      }
+
+      inputCant.addEventListener('change', actualizarDatos);
+      inputPrecio.addEventListener('change', actualizarDatos);
+      inputIva.addEventListener('change', actualizarDatos);
+      inputCon.addEventListener('change', actualizarDatos);
+
+      // Para que al pulsar Enter también se actualice
+      inputCant.addEventListener('keydown', function(e) { if(e.key === 'Enter') actualizarDatos(); });
+      inputPrecio.addEventListener('keydown', function(e) { if(e.key === 'Enter') actualizarDatos(); });
+
+      div.querySelector('.btn-eliminar-linea').onclick = function() {
+        window._lineasEditor.splice(index, 1);
+        window.renderLineasEditor();
+      };
+
+      return div;
+    }
+
+    var productos = window._lineasEditor.filter(function(l) { return l.tipo === 'producto'; });
+    if (productos.length) {
+      var tituloProd = document.createElement('div');
+      tituloProd.className = 'card';
+      tituloProd.style.background = 'var(--primary-soft)';
+      tituloProd.style.padding = '0.6rem 1rem';
+      tituloProd.style.marginBottom = '0.5rem';
+      tituloProd.innerHTML = '<h3 style="color: var(--primary); margin: 0;">📦 Productos Aranda Crafts</h3>';
+      contProd.appendChild(tituloProd);
+      productos.forEach(function(linea) {
+        contProd.appendChild(pintarLinea(linea, window._lineasEditor.indexOf(linea)));
+      });
+    }
+
+    var trabajos = window._lineasEditor.filter(function(l) { return l.tipo === 'trabajo'; });
+    if (trabajos.length) {
+      var tituloTrab = document.createElement('div');
+      tituloTrab.className = 'card';
+      tituloTrab.style.background = 'var(--warn-soft)';
+      tituloTrab.style.padding = '0.6rem 1rem';
+      tituloTrab.style.marginBottom = '0.5rem';
+      tituloTrab.innerHTML = '<h3 style="color: var(--warn); margin: 0;">🛠️ Trabajos Aranda Crafts</h3>';
+      contTrab.appendChild(tituloTrab);
+      trabajos.forEach(function(linea) {
+        contTrab.appendChild(pintarLinea(linea, window._lineasEditor.indexOf(linea)));
+      });
+    }
+
+    var totalBox = document.getElementById('presu-total');
+    if (totalBox) totalBox.textContent = window.eur(Math.round((granTotal + Number.EPSILON) * 100) / 100);
+    var baseBox = document.getElementById('presu-base');
+    if (baseBox) baseBox.textContent = window.eur(Math.round((totalBase + Number.EPSILON) * 100) / 100);
+    var ivaBox = document.getElementById('presu-iva');
+    if (ivaBox) ivaBox.textContent = window.eur(Math.round((totalIva + Number.EPSILON) * 100) / 100);
+
+    window._totalesPresupuesto = {
+      base: Math.round((totalBase + Number.EPSILON) * 100) / 100,
+      iva: Math.round((totalIva + Number.EPSILON) * 100) / 100,
+      total: Math.round((granTotal + Number.EPSILON) * 100) / 100
+    };
+  };
+})();
