@@ -335,7 +335,7 @@
           '<div class="tarjeta-icono">' + (prod.icono || '📦') + '</div>' +
           '<div class="tarjeta-titulo">' + escapar(prod.nombre) + '</div>' +
           '<div class="tarjeta-desc" style="font-size:1.1rem; font-weight:bold; color:var(--primary);">' + eur(prod.precio * (1 + (prod.iva||0)/100)) + '</div>' +
-          (prod.stock > 0 ? '<div class="tarjeta-desc">Stock: ' + prod.stock + '</div>' : '<div class="tarjeta-desc" style="color:var(--danger)">Agotado</div>') +
+          (prod.stock > 0 ? '<div class="tarjeta-desc">Stock: ' + Number(prod.stock).toFixed(1).replace('.0', '') + '</div>' : '<div class="tarjeta-desc" style="color:var(--danger)">Agotado</div>') +
           tallasTxt;
         
         // Abrir modal al hacer clic en la tarjeta
@@ -385,7 +385,7 @@
         id: window._prodEditandoId || window.Storage.uuid(),
         nombre: nombre, precio: pBase, iva: pIva,
         coste: parseFloat(document.getElementById('mp-coste').value) || 0,
-        stock: parseInt(document.getElementById('mp-stock').value) || 0,
+        stock: parseFloat((document.getElementById('mp-stock').value || '0').replace(',', '.')) || 0,
         icono: document.getElementById('mp-icono').value || '📦',
         notas: document.getElementById('mp-notas').value.trim()
       };
@@ -459,7 +459,7 @@ function agregarFilaVariante(color, talla, cantidad) {
       '</select>' +
       '<input type="text" class="var-talla-custom" value="' + (talla || '') + '" placeholder="Escribe la talla..." style="width:100%; display: none;">' +
     '</td>' +
-    '<td><input type="number" class="var-cant" value="' + (cantidad || 0) + '" min="0" style="width:100%; text-align:right;"></td>' +
+    '<td><input type="text" class="var-cant" value="' + (cantidad || 0) + '" min="0" style="width:100%; text-align:right;"></td>' +
     '<td class="centro"><button type="button" class="btn btn-sm btn-peligro btn-del-var">✕</button></td>';
 
   var selColor = tr.querySelector('.var-color-select');
@@ -505,7 +505,7 @@ function recalcularStockDesdeVariantes() {
   if (!tbody) return;
   var total = 0;
   tbody.querySelectorAll('.var-cant').forEach(function(inp) {
-    total += parseInt(inp.value) || 0;
+    total += parseFloat((inp.value || '0').replace(',', '.')) || 0;
   });
   if (inputStock) inputStock.value = total;
   if (spanTotal) spanTotal.textContent = total;
@@ -3865,7 +3865,7 @@ document.addEventListener('DOMContentLoaded', function() {
           
           var color = (selColor && selColor.value === '__otro__') ? (inpColor ? inpColor.value.trim() : '') : (selColor ? selColor.value : '');
           var talla = (selTalla && selTalla.value === '__otro__') ? (inpTalla ? inpTalla.value.trim() : '') : (selTalla ? selTalla.value : '');
-          var cantidad = parseInt(inpCant.value) || 0;
+          var cantidad = parseFloat((inpCant.value || '0').replace(',', '.')) || 0;
           
           if (color && talla) {
             variantes.push({ color: color, talla: talla, cantidad: cantidad });
@@ -3988,14 +3988,14 @@ document.addEventListener('DOMContentLoaded', function() {
         '<select class="var-talla-select" style="width:100%; margin-bottom: 0.3rem;">' + opcionesTalla + '</select>' +
         '<input type="text" class="var-talla-custom" value="" placeholder="Escribe la talla..." style="width:100%; display: none;">' +
       '</td>' +
-      '<td><input type="number" class="var-cant" value="' + (cantidad || 0) + '" min="0" style="width:100%; text-align:right;"></td>' +
+      '<td><input type="text" class="var-cant" value="' + (cantidad || 0) + '" min="0" style="width:100%; text-align:right;"></td>' +
       '<td class="centro"><button type="button" class="btn btn-sm btn-peligro btn-del-var">✕</button></td>';
     
     // Eventos para los selects
     var selColor = tr.querySelector('.var-color-select');
     var inpColor = tr.querySelector('.var-color-custom');
     if (color && COLORES.indexOf(color) === -1) {
-      selColor.value = '__otro__';
+      selColor.style.display = 'none';
       inpColor.style.display = 'block';
       inpColor.value = color;
     }
@@ -4007,7 +4007,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var selTalla = tr.querySelector('.var-talla-select');
     var inpTalla = tr.querySelector('.var-talla-custom');
     if (talla && TALLAS.indexOf(talla) === -1) {
-      selTalla.value = '__otro__';
+      selTalla.style.display = 'none';
       inpTalla.style.display = 'block';
       inpTalla.value = talla;
     }
@@ -4064,7 +4064,7 @@ document.addEventListener('DOMContentLoaded', function() {
           
           var color = (selColor && selColor.value === '__otro__') ? (inpColor ? inpColor.value.trim() : '') : (selColor ? selColor.value : '');
           var talla = (selTalla && selTalla.value === '__otro__') ? (inpTalla ? inpTalla.value.trim() : '') : (selTalla ? selTalla.value : '');
-          var cantidad = parseInt(inpCant.value) || 0;
+          var cantidad = parseFloat((inpCant.value || '0').replace(',', '.')) || 0;
           
           if (color && talla) {
             variantes.push({ color: color, talla: talla, cantidad: cantidad });
@@ -4520,7 +4520,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   }
                 });
                 var totalVar = 0;
-                p.variantes.forEach(function(v) { totalVar += (v.cantidad || 0); });
+                p.variantes.forEach(function(v) { totalVar += parseFloat(v.cantidad) || 0; });
                 p.stock = totalVar;
               } 
               // Sin variantes
@@ -4789,314 +4789,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-/* ÚNICO Y DEFINITIVO BOTÓN DE GUARDAR PRODUCTO */
-document.addEventListener('DOMContentLoaded', function() {
-  // Esperamos un poquito a que carguen todos los scripts
-  setTimeout(function() {
-    var btn = document.getElementById('mp-guardar');
-    if (!btn) return;
 
-    // EL TRUCO: Clonamos el botón. Al clonar, se lleva TODOS los eventos viejos a la basura.
-    // El nuevo botón estará limpio de polvo y paja.
-    var nuevoBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(nuevoBtn, btn);
-
-    // Le asignamos NUESTRO evento limpio
-    nuevoBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      var nombre = document.getElementById('mp-nombre').value.trim();
-      if (!nombre) return;
-
-      // 1. Recolectar datos (Igual que en tu código original)
-      var pBase = parseFloat(document.getElementById('mp-precio-base').value) || 0;
-      var pIva = parseFloat(document.getElementById('mp-iva').value) || 21;
-      var pCoste = parseFloat(document.getElementById('mp-coste').value) || 0;
-      var pStock = parseInt(document.getElementById('mp-stock').value) || 0;
-      var pNotas = document.getElementById('mp-notas').value.trim();
-      var pIcono = document.getElementById('mp-icono').value || '📦';
-
-      // Recolectar variantes
-      var variantes = [];
-      var tbody = document.getElementById('mp-lista-variantes');
-      if (tbody) {
-        tbody.querySelectorAll('tr').forEach(function(tr) {
-          var selColor = tr.querySelector('.var-color-select');
-          var inpColor = tr.querySelector('.var-color-custom');
-          var selTalla = tr.querySelector('.var-talla-select');
-          var inpTalla = tr.querySelector('.var-talla-custom');
-          var inpCant = tr.querySelector('.var-cant');
-          if (!inpCant) return;
-          var color = (selColor && selColor.value === '__otro__') ? (inpColor ? inpColor.value.trim() : '') : (selColor ? selColor.value : '');
-          var talla = (selTalla && selTalla.value === '__otro__') ? (inpTalla ? inpTalla.value.trim() : '') : (selTalla ? selTalla.value : '');
-          var cantidad = parseInt(inpCant.value) || 0;
-          if (color && talla) variantes.push({ color: color, talla: talla, cantidad: cantidad });
-        });
-      }
-
-      var nuevoProd = {
-        id: window._prodEditandoId || window.Storage.uuid(),
-        nombre: nombre, precio: pBase, iva: pIva, coste: pCoste,
-        stock: pStock, notas: pNotas, icono: pIcono, variantes: variantes
-      };
-
-      var catId = window._catIdActual;
-      var subcatId = window._subcatIdActual;
-      if (!catId || !subcatId) return;
-
-      // 2. Guardar en el modelo
-      var estructura = window.Modelo.getStockEstructura();
-      var cat = estructura.find(function(c) { return c.id === catId; });
-      if (!cat) return;
-      var sub = cat.categorias.find(function(c) { return c.id === subcatId; });
-      if (!sub) return;
-      
-      if (!sub.productos) sub.productos = [];
-      var idx = sub.productos.findIndex(function(p) { return p.id === nuevoProd.id; });
-      if (idx >= 0) sub.productos[idx] = nuevoProd; 
-      else sub.productos.push(nuevoProd);
-
-      window.Modelo.setStockEstructura(estructura);
-      
-      // 3. CERRAR EL MODAL
-      document.getElementById('modal-producto').hidden = true;
-      
-      // 4. FORZAR ACTUALIZACIÓN VISUAL INMEDIATA
-      if (window.renderStock) {
-        window.renderStock();
-        console.log('✅ Tarjeta actualizada desde el botón limpio.');
-      }
-      
-      if (window.toast) window.toast('Producto guardado');
-    });
-    
-    console.log('✅ Botón de guardar producto reconstruido y limpio.');
-  }, 200);
-});
-
-/* PARCHE: SINCRONIZAR STOCK INICIAL CON LA SUMA DE VARIANTES */
-document.addEventListener('input', function(e) {
-  // Si el usuario cambia la cantidad en cualquier input de variante
-  if (e.target && e.target.classList.contains('var-cant')) {
-    var tbody = document.getElementById('mp-lista-variantes');
-    var inputStock = document.getElementById('mp-stock');
-    var spanTotal = document.getElementById('mp-stock-total');
-    
-    if (tbody && inputStock) {
-      var total = 0;
-      // Sumamos todas las cantidades de las variantes
-      tbody.querySelectorAll('.var-cant').forEach(function(inp) {
-        total += parseInt(inp.value) || 0;
-      });
-      
-      // Actualizamos el campo de "Stock inicial" (el de arriba) y el texto del total
-      inputStock.value = total;
-      if (spanTotal) spanTotal.textContent = total;
-      
-      console.log('🔄 Stock inicial sincronizado a: ' + total);
-    }
-  }
-});
-
-// También lo hacemos al hacer clic en añadir o borrar variante
-document.addEventListener('click', function(e) {
-  if (e.target && (e.target.id === 'mp-add-variante' || e.target.classList.contains('btn-del-var'))) {
-    setTimeout(function() {
-      var tbody = document.getElementById('mp-lista-variantes');
-      var inputStock = document.getElementById('mp-stock');
-      var spanTotal = document.getElementById('mp-stock-total');
-      
-      if (tbody && inputStock) {
-        var total = 0;
-        tbody.querySelectorAll('.var-cant').forEach(function(inp) {
-          total += parseInt(inp.value) || 0;
-        });
-        inputStock.value = total;
-        if (spanTotal) spanTotal.textContent = total;
-      }
-    }, 50); // Un mini retraso para que la fila se añada o se borre primero
-  }
-});
-
-/* PARCHE DE CARGA SECUENCIAL: ASEGURAR QUE EL MODELO ESTÁ LISTO */
-window.addEventListener('load', function() {
-  // Esperamos a que todo el DOM y los scripts estén cargados
-  setTimeout(function() {
-    var hash = location.hash || '#inicio';
-    if (hash === '#inicio') {
-      // Si el modelo existe, pintamos
-      if (window.Modelo && window.Modelo.getPresupuestos) {
-        if (window.renderDashboard) window.renderDashboard();
-      } else {
-        // Si por lo que sea no existe, esperamos un poco más
-        setTimeout(function() {
-          if (window.renderDashboard) window.renderDashboard();
-        }, 500);
-      }
-    }
-  }, 300); // 300ms para asegurar que el script de modelo.js se ha leído
-});
-
-/* PARCHE DEFINITIVO: PINTAR DASHBOARD SIEMPRE AL CARGAR */
-window.addEventListener('load', function() {
-  // Esperamos un poquito a que modelo.js haga su magia
-  setTimeout(function() {
-    // Si el dashboard existe en el DOM, lo pintamos sin importar en qué pestaña estemos
-    if (document.getElementById('db-clientes') && window.renderDashboard) {
-      window.renderDashboard();
-      console.log('✅ Dashboard actualizado tras F5 en la pestaña: ' + (location.hash || '#inicio'));
-    }
-  }, 300);
-});
-
-// Y por si acaso, cuando se cambie el hash de la URL (al hacer clic en el menú)
-window.addEventListener('hashchange', function() {
-  if (location.hash === '#inicio' && window.renderDashboard) {
-    window.renderDashboard();
-  }
-});
-
-/* PARCHE: REORDENAR EL MENÚ DE NAVEGACIÓN (V2) */
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(function() {
-    var nav = document.querySelector('.nav') || document.querySelector('nav');
-    if (!nav) return;
-
-    // El orden exacto que has pedido
-    var ordenDeseado = [
-      'inicio',
-      'registro',
-      'presupuestos',
-      'taller',
-      'stock',       // Productos
-      'inventario',
-      'trabajos',
-      'clientes',
-      'ajustes'
-    ];
-
-    function getBoton(vista) {
-      return nav.querySelector('.nav-btn[data-vista="' + vista + '"]');
-    }
-
-    var botones = [];
-    ordenDeseado.forEach(function(vista) {
-      var btn = getBoton(vista);
-      if (btn) botones.push(btn);
-    });
-
-    // Añadimos cualquier botón huérfano al final (por seguridad)
-    nav.querySelectorAll('.nav-btn').forEach(function(btn) {
-      if (!botones.includes(btn)) {
-        botones.push(btn);
-      }
-    });
-
-    // Volvemos a insertarlos en el DOM
-    botones.forEach(function(btn) {
-      nav.appendChild(btn);
-    });
-
-    console.log('✅ Menú de navegación reordenado al gusto del jefe.');
-  }, 300);
-});
-
-/* PARCHE: ARREGLAR MENÚ HAMBURGUESA EN MÓVIL */
-document.addEventListener('DOMContentLoaded', function() {
-  var nav = document.querySelector('.nav') || document.querySelector('nav');
-  var btnHamburguesa = document.querySelector('.menu-toggle') || document.querySelector('.hamburger') || document.querySelector('.nav-toggle');
-  
-  if (btnHamburguesa && nav) {
-    // Al hacer clic en las tres líneas, forzamos que el menú se muestre u oculte
-    btnHamburguesa.addEventListener('click', function(e) {
-      e.preventDefault();
-      // Si el menú tiene la clase 'activo' o 'show', la quitamos, si no, la ponemos
-      if (nav.classList.contains('activo') || nav.classList.contains('show')) {
-        nav.classList.remove('activo', 'show');
-        nav.style.display = ''; // Volver al CSS por defecto
-      } else {
-        nav.classList.add('activo', 'show');
-        nav.style.display = 'flex'; // Forzar visualización
-        nav.style.flexDirection = 'column'; // Para que se apilen en vertical
-        nav.style.position = 'absolute'; // Para que flote sobre el contenido
-        nav.style.top = '60px'; // Justo debajo de la barra
-        nav.style.background = 'var(--bg)';
-        nav.style.width = '100%';
-        nav.style.zIndex = '1000';
-      }
-    });
-  }
-});
-
-/* PARCHE: MENÚ HAMBURGUESA (btnMenu) EN MÓVIL */
-document.addEventListener('DOMContentLoaded', function() {
-  var btnMenu = document.getElementById('btnMenu');
-  var nav = document.querySelector('.nav') || document.querySelector('nav');
-  
-  if (btnMenu && nav) {
-    btnMenu.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Alternar la clase 'mostrar-menu' en el nav
-      nav.classList.toggle('mostrar-menu');
-      
-      // Si se abre, aplicar estilos en línea para forzar la visualización
-      if (nav.classList.contains('mostrar-menu')) {
-        nav.style.display = 'flex';
-        nav.style.flexDirection = 'column';
-        nav.style.position = 'absolute';
-        nav.style.top = '60px';
-        nav.style.left = '0';
-        nav.style.width = '100%';
-        nav.style.background = 'var(--bg)';
-        nav.style.zIndex = '1000';
-        nav.style.padding = '1rem';
-        nav.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-      } else {
-        nav.style.display = '';
-        nav.style.position = '';
-        nav.style.flexDirection = '';
-        nav.style.padding = '';
-        nav.style.boxShadow = '';
-      }
-    });
-
-    // Cerrar el menú al hacer clic en una opción
-    nav.querySelectorAll('.nav-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        if (window.innerWidth <= 900) {
-          nav.classList.remove('mostrar-menu');
-          nav.style.display = '';
-          nav.style.position = '';
-          nav.style.flexDirection = '';
-          nav.style.padding = '';
-          nav.style.boxShadow = '';
-        }
-      });
-    });
-  }
-});
-/* PARCHE: OCULTAR LEYENDA ESTÁTICA EN EL MODAL */
-(function() {
-  var _abrirProdOrig = window.abrirModalProducto;
-  window.abrirModalProducto = function(prod) {
-    _abrirProdOrig(prod);
-    var seccion = document.getElementById("mp-seccion-variantes");
-    if (seccion) {
-      var hijos = seccion.childNodes;
-      for (var i = 0; i < hijos.length; i++) {
-        var hijo = hijos[i];
-        if (hijo.nodeType === 3 && hijo.textContent.includes("Tipo de variante:")) {
-          hijo.textContent = "";
-        }
-        if (hijo.nodeType === 1 && hijo.innerHTML.includes("Sin variantes (Producto simple)")) {
-          hijo.style.display = "none";
-        }
-      }
-    }
-  };
-})();
 /* PARCHE: HACER EL MODAL MAS GRANDE */
 (function() {
   var _abrirProdOrig = window.abrirModalProducto;
@@ -5288,3 +4981,143 @@ document.addEventListener('click', function(e) {
     };
   };
 })();
+
+/* PARCHE FINAL: RECALCULAR STOCK AL GUARDAR (SIEMPRE) */
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'mp-guardar') {
+    // 1. Recogemos las variantes de la tabla
+    var variantes = [];
+    var tbody = document.getElementById('mp-lista-variantes');
+    if (tbody) {
+      tbody.querySelectorAll('tr').forEach(function(tr) {
+        var selColor = tr.querySelector('.var-color-select');
+        var inpColor = tr.querySelector('.var-color-custom');
+        var selTalla = tr.querySelector('.var-talla-select');
+        var inpTalla = tr.querySelector('.var-talla-custom');
+        var inpCant = tr.querySelector('.var-cant');
+        if (!inpCant) return;
+        var color = (selColor && selColor.value === '__otro__') ? (inpColor ? inpColor.value.trim() : '') : (selColor ? selColor.value : '');
+        var talla = (selTalla && selTalla.value === '__otro__') ? (inpTalla ? inpTalla.value.trim() : '') : (selTalla ? selTalla.value : '');
+        var cantidad = parseFloat((inpCant.value || '0').replace(',', '.')) || 0;
+        if (color && talla) {
+          variantes.push({ color: color, talla: talla, cantidad: cantidad });
+        }
+      });
+    }
+
+    // 2. Calculamos el stock total sumando las variantes
+    var stockTotal = 0;
+    variantes.forEach(function(v) {
+      stockTotal += v.cantidad;
+    });
+
+    // 3. Si hay variantes, forzamos el valor del input de stock para que el guardado lo recoja
+    if (variantes.length > 0) {
+      var inputStock = document.getElementById('mp-stock');
+      if (inputStock) {
+        inputStock.value = stockTotal;
+      }
+    }
+  }
+}, true); // El 'true' hace que se ejecute ANTES del guardado original
+
+/* PARCHE DEFINITIVO: GUARDAR STOCK SUMANDO VARIANTES */
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'mp-guardar') {
+    // Esperamos un instante a que el guardado original termine
+    setTimeout(function() {
+      // 1. Recogemos el ID del producto que se acaba de guardar
+      var prodId = window._prodEditandoId;
+      if (!prodId) return;
+
+      // 2. Buscamos el producto en el localStorage y recalculamos su stock
+      var estructura = JSON.parse(localStorage.getItem('arandacrafts:stock:estructura') || '[]');
+      var encontrado = false;
+
+      estructura.forEach(function(cat) {
+        (cat.categorias || []).forEach(function(sub) {
+          (sub.productos || []).forEach(function(p) {
+            if (p.id === prodId) {
+              // Si tiene variantes, sumamos las cantidades
+              if (p.variantes && p.variantes.length > 0) {
+                var total = 0;
+                p.variantes.forEach(function(v) {
+                  total += parseFloat(v.cantidad) || 0;
+                });
+                p.stock = total;
+                encontrado = true;
+              }
+            }
+          });
+        });
+      });
+
+      // 3. Guardamos de nuevo en localStorage
+      if (encontrado) {
+        localStorage.setItem('arandacrafts:stock:estructura', JSON.stringify(estructura));
+        console.log('✅ Stock corregido a: ' + (estructura.find(function(c) { return c.id === 's-vinilos'; }).categorias[0].productos.find(function(p) { return p.id === prodId; }) || {}).stock);
+        
+        // 4. Refrescamos la vista
+        if (window.renderStock) window.renderStock();
+      }
+    }, 200); // Un pequeño retraso para que el guardado original termine
+  }
+}, true);
+
+/* PARCHE: LIMPIAR EL SELECTOR DE "OTRO..." (V2 SEGURO) */
+document.addEventListener('change', function(e) {
+  // 1. Para el color
+  if (e.target && e.target.classList.contains('var-color-select')) {
+    var tr = e.target.closest('tr');
+    if (!tr) return;
+    var inpColor = tr.querySelector('.var-color-custom');
+    if (!inpColor) return;
+
+    if (e.target.value === '__otro__') {
+      // Ocultar el select, mostrar solo el input
+      e.target.style.display = 'none';
+      inpColor.style.display = 'block';
+      inpColor.value = '';
+      inpColor.focus();
+    }
+  }
+
+  // 2. Para la talla
+  if (e.target && e.target.classList.contains('var-talla-select')) {
+    var tr2 = e.target.closest('tr');
+    if (!tr2) return;
+    var inpTalla = tr2.querySelector('.var-talla-custom');
+    if (!inpTalla) return;
+
+    if (e.target.value === '__otro__') {
+      e.target.style.display = 'none';
+      inpTalla.style.display = 'block';
+      inpTalla.value = '';
+      inpTalla.focus();
+    }
+  }
+});
+
+// 3. Al salir del input, si hay texto, dejamos el select oculto y guardamos el valor
+document.addEventListener('blur', function(e) {
+  if (e.target && (e.target.classList.contains('var-color-custom') || e.target.classList.contains('var-talla-custom'))) {
+    var tr = e.target.closest('tr');
+    if (!tr) return;
+
+    var valor = e.target.value.trim();
+    var isColor = e.target.classList.contains('var-color-custom');
+    var select = tr.querySelector(isColor ? '.var-color-select' : '.var-talla-select');
+    if (!select) return;
+
+    if (valor) {
+      // Si hay texto, el select se queda oculto
+      select.style.display = 'none';
+      e.target.style.display = 'block';
+    } else {
+      // Si no hay texto, volvemos a mostrar el select
+      select.style.display = 'block';
+      e.target.style.display = 'none';
+      select.value = '';
+    }
+  }
+}, true);
