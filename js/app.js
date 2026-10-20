@@ -3863,8 +3863,23 @@ document.addEventListener('DOMContentLoaded', function() {
           
           if (!inpCant) return;
           
-          var color = (selColor && selColor.value === '__otro__') ? (inpColor ? inpColor.value.trim() : '') : (selColor ? selColor.value : '');
-          var talla = (selTalla && selTalla.value === '__otro__') ? (inpTalla ? inpTalla.value.trim() : '') : (selTalla ? selTalla.value : '');
+          var color = '';
+        if (selColor && selColor.style.display === 'none' && inpColor) {
+          // Si el select está oculto, leemos del input
+          color = inpColor.value.trim();
+        } else if (selColor && selColor.value && selColor.value !== '__otro__') {
+          color = selColor.value;
+        } else if (inpColor) {
+          color = inpColor.value.trim();
+        }
+          var talla = '';
+        if (selTalla && selTalla.style.display === 'none' && inpTalla) {
+          talla = inpTalla.value.trim();
+        } else if (selTalla && selTalla.value && selTalla.value !== '__otro__') {
+          talla = selTalla.value;
+        } else if (inpTalla) {
+          talla = inpTalla.value.trim();
+        }
           var cantidad = parseFloat((inpCant.value || '0').replace(',', '.')) || 0;
           
           if (color && talla) {
@@ -4062,8 +4077,23 @@ document.addEventListener('DOMContentLoaded', function() {
           
           if (!inpCant) return;
           
-          var color = (selColor && selColor.value === '__otro__') ? (inpColor ? inpColor.value.trim() : '') : (selColor ? selColor.value : '');
-          var talla = (selTalla && selTalla.value === '__otro__') ? (inpTalla ? inpTalla.value.trim() : '') : (selTalla ? selTalla.value : '');
+          var color = '';
+        if (selColor && selColor.style.display === 'none' && inpColor) {
+          // Si el select está oculto, leemos del input
+          color = inpColor.value.trim();
+        } else if (selColor && selColor.value && selColor.value !== '__otro__') {
+          color = selColor.value;
+        } else if (inpColor) {
+          color = inpColor.value.trim();
+        }
+          var talla = '';
+        if (selTalla && selTalla.style.display === 'none' && inpTalla) {
+          talla = inpTalla.value.trim();
+        } else if (selTalla && selTalla.value && selTalla.value !== '__otro__') {
+          talla = selTalla.value;
+        } else if (inpTalla) {
+          talla = inpTalla.value.trim();
+        }
           var cantidad = parseFloat((inpCant.value || '0').replace(',', '.')) || 0;
           
           if (color && talla) {
@@ -4996,8 +5026,23 @@ document.addEventListener('click', function(e) {
         var inpTalla = tr.querySelector('.var-talla-custom');
         var inpCant = tr.querySelector('.var-cant');
         if (!inpCant) return;
-        var color = (selColor && selColor.value === '__otro__') ? (inpColor ? inpColor.value.trim() : '') : (selColor ? selColor.value : '');
-        var talla = (selTalla && selTalla.value === '__otro__') ? (inpTalla ? inpTalla.value.trim() : '') : (selTalla ? selTalla.value : '');
+        var color = '';
+        if (selColor && selColor.style.display === 'none' && inpColor) {
+          // Si el select está oculto, leemos del input
+          color = inpColor.value.trim();
+        } else if (selColor && selColor.value && selColor.value !== '__otro__') {
+          color = selColor.value;
+        } else if (inpColor) {
+          color = inpColor.value.trim();
+        }
+        var talla = '';
+        if (selTalla && selTalla.style.display === 'none' && inpTalla) {
+          talla = inpTalla.value.trim();
+        } else if (selTalla && selTalla.value && selTalla.value !== '__otro__') {
+          talla = selTalla.value;
+        } else if (inpTalla) {
+          talla = inpTalla.value.trim();
+        }
         var cantidad = parseFloat((inpCant.value || '0').replace(',', '.')) || 0;
         if (color && talla) {
           variantes.push({ color: color, talla: talla, cantidad: cantidad });
@@ -5119,5 +5164,81 @@ document.addEventListener('blur', function(e) {
       e.target.style.display = 'none';
       select.value = '';
     }
+  }
+}, true);
+
+/* PARCHE EXTRA: LEER INPUTS PERSONALIZADOS AL GUARDAR */
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'mp-guardar') {
+    // Pequeño retraso para que el guardado original termine
+    setTimeout(function() {
+      var prodId = window._prodEditandoId;
+      if (!prodId) return;
+
+      // Leer las variantes directamente de la tabla
+      var variantes = [];
+      var tbody = document.getElementById('mp-lista-variantes');
+      if (tbody) {
+        tbody.querySelectorAll('tr').forEach(function(tr) {
+          var selColor = tr.querySelector('.var-color-select');
+          var inpColor = tr.querySelector('.var-color-custom');
+          var selTalla = tr.querySelector('.var-talla-select');
+          var inpTalla = tr.querySelector('.var-talla-custom');
+          var inpCant = tr.querySelector('.var-cant');
+          if (!inpCant) return;
+
+          // Leer color: si el select está oculto, usar el input
+          var color = '';
+          if (selColor && selColor.style.display === 'none' && inpColor) {
+            color = inpColor.value.trim();
+          } else if (selColor && selColor.value && selColor.value !== '__otro__') {
+            color = selColor.value;
+          } else if (inpColor) {
+            color = inpColor.value.trim();
+          }
+
+          // Leer talla: si el select está oculto, usar el input
+          var talla = '';
+          if (selTalla && selTalla.style.display === 'none' && inpTalla) {
+            talla = inpTalla.value.trim();
+          } else if (selTalla && selTalla.value && selTalla.value !== '__otro__') {
+            talla = selTalla.value;
+          } else if (inpTalla) {
+            talla = inpTalla.value.trim();
+          }
+
+          var cantidad = parseFloat((inpCant.value || '0').replace(',', '.')) || 0;
+
+          if (color && talla) {
+            variantes.push({ color: color, talla: talla, cantidad: cantidad });
+          }
+        });
+      }
+
+      // Si hay variantes, forzamos su guardado en el producto
+      if (variantes.length > 0) {
+        var estructura = JSON.parse(localStorage.getItem('arandacrafts:stock:estructura') || '[]');
+        var encontrado = false;
+        estructura.forEach(function(cat) {
+          (cat.categorias || []).forEach(function(sub) {
+            (sub.productos || []).forEach(function(p) {
+              if (p.id === prodId) {
+                p.variantes = variantes;
+                // Recalcular stock total
+                var total = 0;
+                variantes.forEach(function(v) { total += v.cantidad; });
+                p.stock = total;
+                encontrado = true;
+              }
+            });
+          });
+        });
+        if (encontrado) {
+          localStorage.setItem('arandacrafts:stock:estructura', JSON.stringify(estructura));
+          console.log('✅ Variantes guardadas correctamente:', variantes);
+          if (window.renderStock) window.renderStock();
+        }
+      }
+    }, 300); // Esperar a que el guardado original termine
   }
 }, true);
