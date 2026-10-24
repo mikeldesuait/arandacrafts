@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArandaCrafts — Presupuestos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+<style>
+</style>
+
+<style>
+  /* Reglas globales limpias para todas las vistas */
+  .vista {
+  }
+  .vista .cabecera-vista {
+  }
+  /* El footer siempre abajo del todo */
+  footer {
+    margin-top: auto;
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
+
+
+<style>
+  body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
+  .vista.activa { display: block; }
+  footer { margin-top: auto; padding: 1rem; text-align: center; color: var(--text-soft); font-size: 0.8rem; border-top: 1px solid var(--border); }
+</style>
+
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="logo">🛠️ ArandaCrafts</span>
+    </div>
+    <nav class="topbar-nav">
+      <button class="nav-btn" data-vista="inicio">Inicio</button>
+      <button class="nav-btn" data-vista="stock">Productos</button>
+      <button class="nav-btn" data-vista="trabajos">Trabajos</button>
+      <button class="nav-btn" data-vista="clientes">Clientes</button>
+      <button class="nav-btn" data-vista="registro">Registro de entrada</button>
+      <button class="nav-btn" data-vista="presupuestos">Presupuestos</button>
+      <button class="nav-btn" data-vista="ajustes">Ajustes</button>
+    </nav>
+    <button id="btnMenu" class="icon-btn menu-btn" title="Menú">☰</button>
+    <div class="topbar-right">
+      <button id="btnTema" class="icon-btn" title="Cambiar tema">🌙</button>
+    </div>
+  </header>
+
+  <main id="contenido" class="contenido">
+
+    
+<section id="vista-inicio" class="vista activa">
+  <div style="text-align: center; margin-bottom: 2rem; margin-top: 1rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 0; letter-spacing: -0.5px;">Aranda Crafts</h1>
+    <p style="font-size: 1.1rem; color: var(--text-soft); margin-top: 0.5rem;">Panel de Control del Taller</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div class="dash-mini-card"><div><h4>Clientes</h4><div class="val" id="db-clientes">0</div></div><div class="icon">👥</div></div>
+    <div class="dash-mini-card" style="border-left: 4px solid #2e7d32;"><div><h4>Cobrado</h4><div class="val" style="color: #2e7d32;" id="db-cobrado">0,00 €</div></div><div class="icon">💰</div></div>
+    <div class="dash-mini-card" style="border-left: 4px solid #f57c00;"><div><h4>Pendiente</h4><div class="val" style="color: #f57c00;" id="db-pendiente">0,00 €</div></div><div class="icon">⏳</div></div>
+    <div class="dash-mini-card"><div><h4>Inversión Stock</h4><div class="val" id="db-inversion">0,00 €</div></div><div class="icon">📦</div></div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+    <div class="dash-panel">
+      <h2>🚨 Pedidos en Taller (Urgentes)</h2>
+      <ul class="dash-lista" id="db-taller-lista"></ul>
+    </div>
+    <div class="dash-panel">
+      <h2>🔥 Top 5 Más Vendidos</h2>
+      <div id="db-top-ventas"></div>
+    </div>
+  </div>
+</section>
+
+
+    <section id="vista-stock" class="vista">
+      <div class="clientes-cabecera">
+        <h1>Stock</h1>
+      </div>
+      <div id="stock-nivel1" class="grid-tarjetas"></div>
+    </section>
+
+    <section id="vista-clientes" class="vista">
+      <div class="clientes-cabecera">
+        <h1>Clientes</h1>
+        <button id="btnNuevoCliente" class="btn btn-primario">+ Nuevo cliente</button>
+      </div>
+      <div id="clientes-vacio" class="placeholder">Aún no hay clientes. Pulsa "+ Nuevo cliente".</div>
+      <div id="clientes-lista" style="display:none"></div>
+    </section>
+
+    <section id="vista-registro" class="vista">
+      <div class="clientes-cabecera">
+        <h1>Registro de entrada</h1>
+        <button id="btnNuevaEntrada" class="btn btn-primario" onclick="if(window.abrirModalRegistro){window.abrirModalRegistro(null);}else{alert('Error: la función no está cargada.');}">+ Registrar entrada</button>
+      </div>
+      
+      <div id="registro-vacio" class="placeholder">Aún no hay registros de entrada.</div>
+      
+      <div id="registro-lista" style="display:none" class="grid-tarjetas">
+        <!-- Aquí se pintarán las tarjetas de cada entrada -->
+      </div>
+    </section>
+
+
+    <section id="vista-trabajos" class="vista">
+      <div class="clientes-cabecera">
+        <h1>Trabajos</h1>
+        <div style="display:flex; gap:0.5rem;">
+          <button id="btnGuardarTrabajos" class="btn" onclick="window.guardarTrabajos()">💾 Guardar cambios</button>
+          <button id="btnNuevoTrabajo" class="btn btn-primario" onclick="window.anadirTrabajo()">+ Añadir trabajo</button>
+        </div>
+      </div>
+      <table class="tabla" id="tabla-mano">
+        <thead>
+          <tr>
+            <th style="width:50%">Nombre del trabajo</th>
+            <th style="width:12%">Tipo</th>
+            <th style="width:15%">Precio Base (€)</th>
+            <th style="width:10%">IVA (%)</th>
+            <th style="width:15%">Precio Final (€)</th>
+            <th style="width:10%" class="centro">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-trabajos">
+          <!-- Se rellena con JS -->
+        </tbody>
+      </table>
+    </section>
+
+    <section id="vista-presupuestos" class="vista">
+
+      <!-- ░░░ LISTADO ░░░ -->
+      <div id="presu-listado">
+        <div class="barra-acciones">
+          <button id="btnNuevoPresupuesto" class="btn btn-primario" onclick="window.nuevoPresupuesto()">+ Nuevo presupuesto</button>
+        </div>
+        <div id="presu-vacio" class="placeholder">Aún no hay presupuestos. Pulsa “+ Nuevo presupuesto”.</div>
+        <table class="tabla" id="presu-tabla" style="display:none">
+          <thead>
+            <tr>
+              <th style="width:14%">Tipo</th>
+              <th style="width:16%">Número</th>
+              <th style="width:12%">Fecha</th>
+              <th style="width:26%">Cliente</th>
+              <th style="width:14%" class="derecha">Total</th>
+              <th style="width:10%">Estado</th>
+              <th style="width:8%" class="centro">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-presupuestos"></tbody>
+        </table>
+      </div>
+
+      <!-- ░░░ EDITOR ░░░ -->
+      <div id="presu-editor" style="display:none">
+        <div class="barra-acciones">
+          <button id="btnVolverListado" class="btn" onclick="window.cerrarEditorPresupuesto()">← Volver al listado</button>
+          <button id="btnGuardarPresupuesto" class="btn btn-primario">💾 Guardar</button>
+          <button id="btnImprimirPresupuesto" class="btn">🖨️ Imprimir / PDF</button>
+          <button id="btnEliminarPresupuesto" class="btn btn-peligro">🗑️ Eliminar</button>
+        </div>
+
+        <div class="card">
+          <div class="fila">
+            <div class="campo" style="flex:0 0 180px">
+              <label>Tipo de documento</label>
+              <select id="presu-tipo">
+                <option value="presupuesto">Presupuesto</option>
+                <option value="albaran">Albarán</option>
+                <option value="factura">Factura</option>
+              </select>
+            </div>
+            <div class="campo" style="flex:0 0 180px">
+              <label>Número</label>
+              <input type="text" id="presu-numero" readonly>
+            </div>
+            <div class="campo" style="flex:0 0 160px">
+              <label>Fecha</label>
+              <input type="date" id="presu-fecha">
+            </div>
+            <div class="campo" style="flex: 1 1 260px">
+              <label>Cliente</label>
+              <select id="presu-cliente-select" style="width:100%" onchange="if(window.actualizarRegistrosPresupuesto) window.actualizarRegistrosPresupuesto(this.value);">
+                <option value="">— Elegir cliente —</option>
+                <option value="__nuevo__">➕ Nuevo cliente...</option>
+              </select>
+              <input type="hidden" id="presu-cliente">
+            </div>
+            <div class="campo" style="flex:0 0 200px">
+              <label>Contacto</label>
+              <input type="text" id="presu-contacto" placeholder="Teléfono / email">
+            </div>
+            <div class="campo" style="flex: 0 0 260px">
+              <label>Material del cliente (opcional)</label>
+              <select id="presu-registro-vinculado">
+                <option value="">— Sin material del cliente —</option>
+              </select>
+            </div>
+          </div>
+          <div class="campo">
+            <label>Descripción del trabajo</label>
+            <input type="text" id="presu-descripcion" placeholder="Ej: 20 camisetas peña con logo">
+          </div>
+        </div>
+
+        <!-- Contenedor dinámico de líneas -->
+        <div class="barra-acciones" style="margin-bottom: 1rem;">
+          <button id="btnAnadirLinea" class="btn btn-primario" type="button">+ Añadir línea al presupuesto</button>
+        </div>
+        
+        <!-- Contenedor dinámico para las líneas -->
+        <div id="contenedor-productos" style="margin-top: 1rem;"></div>
+
+        <!-- CONTENEDOR DE TRABAJOS -->
+        <div id="contenedor-trabajos" style="margin-bottom: 1rem;"></div>
+
+        <div style="display:none;">
+        </div>
+        
+        <!-- CONTENEDOR DEL MATERIAL DEL CLIENTE (SIEMPRE ARRIBA) -->
+        <div id="bloque-material-cliente" class="card" style="display:none; background: #fff8e1; border-color: #e6c34a;">
+          <div class="bloque-cabecera" style="margin-bottom: 0.5rem;">
+            <h2 style="color: #8a6d00; margin: 0;">📦 Material aportado por el cliente (no se cobra)</h2>
+          </div>
+          <table class="tabla tabla-lineas">
+            <thead>
+              <tr>
+                <th style="width:70%">Concepto</th>
+                <th style="width:30%" class="derecha">Cantidad</th>
+              </tr>
+            </thead>
+            <tbody id="lineas-material-cliente"></tbody>
+          </table>
+        </div>
+
+        <!-- CONTENEDOR DE MATERIALES (ROPA, VINILOS...) -->
+        <div id="contenedor-materiales-facturados"></div>
+
+        <!-- CONTENEDOR DE MANO DE OBRA / SERVICIOS -->
+        <div id="contenedor-mano-obra-facturada"></div>
+
+        
+
+
+
+        <!-- Totales y estado -->
+        <div class="card total-card">
+          <div class="fila">
+            <div class="campo" style="flex:0 0 220px">
+              <label>Estado</label>
+              <select id="presu-estado">
+                <option value="borrador">Borrador</option>
+                <option value="enviado">Enviado</option>
+                <option value="aceptado">Aceptado</option>
+                <option value="rechazado">Rechazado</option>
+                <option value="hecho">Hecho</option>
+              </select>
+            </div>
+            <div class="campo" style="flex:1">
+              <label>Notas</label>
+              <input type="text" id="presu-notas" placeholder="Observaciones, condiciones de pago...">
+            </div>
+            <div class="total-box" style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; min-width: 200px;">
+              <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.9rem; color: var(--text-soft);">
+                <span>Base Imponible:</span>
+                <span id="presu-base">0,00 €</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.9rem; color: var(--text-soft);">
+                <span>IVA:</span>
+                <span id="presu-iva">0,00 €</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; width: 100%; font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-top: 0.3rem; border-top: 1px solid var(--border); padding-top: 0.3rem;">
+                <span>TOTAL:</span>
+                <span id="presu-total">0,00 €</span>
+              </div>
+            </div>
+      </div>
+    </section>
+
+    <section id="vista-ajustes" class="vista">
+      <h1>Ajustes</h1>
+
+      <!-- ─── DATOS DEL EMISOR ─── -->
+      <div class="card">
+        <h2>👤 Datos del emisor</h2>
+        <p class="hint">Aparecerán en la cabecera de los presupuestos impresos.</p>
+        <div class="fila">
+          <div class="campo">
+            <label>Nombre comercial (marca)</label>
+            <input type="text" id="aj-marca" placeholder="Aranda Crafts">
+          </div>
+          <div class="campo">
+            <label>Eslogan / descripción corta</label>
+            <input type="text" id="aj-eslogan" placeholder="Estampación textil · Vinilo · DTF">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Nombre fiscal (titular autónomo)</label>
+            <input type="text" id="aj-nombre" placeholder="Miguel Aranda López">
+          </div>
+          <div class="campo" style="flex:0 0 180px">
+            <label>NIF / CIF</label>
+            <input type="text" id="aj-nif" placeholder="12345678A">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Dirección</label>
+            <input type="text" id="aj-direccion" placeholder="Calle Mayor 1, 09400 Aranda de Duero (Burgos)">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Teléfono</label>
+            <input type="text" id="aj-telefono" placeholder="600 000 000">
+          </div>
+          <div class="campo">
+            <label>Email</label>
+            <input type="email" id="aj-email" placeholder="info@arandacrafts.com">
+          </div>
+          <div class="campo">
+            <label>Web (opcional)</label>
+            <input type="text" id="aj-web" placeholder="www.arandacrafts.com">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>IBAN (opcional)</label>
+            <input type="text" id="aj-iban" placeholder="ES00 0000 0000 0000 0000 0000">
+          </div>
+        </div>
+        <div class="acciones">
+          <button id="aj-guardar-emisor" class="btn btn-primario" onclick="window.guardarAjustesEmisor()">💾 Guardar datos</button>
+        </div>
+      </div>
+
+      <!-- ─── BACKUP ─── -->
+      <div class="card">
+        <h2>💾 Backup</h2>
+        <p class="hint">Guarda o restaura toda la aplicación (catálogos, presupuestos, emisor, tema).</p>
+        <div class="barra-acciones">
+          <button id="aj-exportar" class="btn">📤 Exportar backup</button>
+          <button id="aj-importar" class="btn">📥 Importar backup</button>
+          <input type="file" id="aj-file" accept="application/json,.json" hidden>
+        </div>
+        <p class="hint">Última exportación: <span id="aj-ultima-export">—</span></p>
+      </div>
+
+      <!-- ─── APARIENCIA ─── -->
+      <div class="card">
+        <h2>🎨 Apariencia</h2>
+        <div class="fila">
+          <div class="campo" style="flex:0 0 220px">
+            <label>Tema</label>
+            <select id="aj-tema">
+              <option value="light">Claro</option>
+              <option value="dark">Oscuro</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── INFORMACIÓN ─── -->
+      <div class="card">
+        <h2>ℹ️ Información</h2>
+        <ul class="info-lista">
+          <li><strong>Versión:</strong> v0.1</li>
+          <li><strong>Presupuestos guardados:</strong> <span id="aj-info-presu">0</span></li>
+          <li><strong>Materiales en catálogo:</strong> <span id="aj-info-materiales">0</span></li>
+          <li><strong>Ropa en catálogo:</strong> <span id="aj-info-ropa">0</span></li>
+          <li><strong>Mano de obra:</strong> <span id="aj-info-mano">0</span></li>
+          <li><strong>Espacio usado:</strong> <span id="aj-info-espacio">0 KB</span></li>
+        </ul>
+        <p class="hint">
+          Repo: <a href="https://github.com/mikeldesuait/arandacrafts" target="_blank" rel="noopener">
+            github.com/mikeldesuait/arandacrafts
+          </a>
+        </p>
+      </div>
+
+      <!-- ─── ZONA PELIGROSA ─── -->
+      <div class="card card-peligro">
+        <h2>⚠️ Zona peligrosa</h2>
+        <p class="hint">Borra <strong>todos</strong> los datos de la aplicación. No se puede deshacer.</p>
+        <div class="barra-acciones">
+          <button id="aj-borrar-todo" class="btn btn-peligro">🗑️ Borrar todos los datos</button>
+        </div>
+      </div>
+
+    </section>
+
+  
+<section id="vista-taller" class="vista">
+      <div class="cabecera-vista" style="margin-bottom: 1rem;">
+        <h2 style="margin: 0;">🏭 Tablero de Taller</h2>
+        <p style="color:var(--text-soft); margin-top: 0.2rem;">Haz clic en un pedido para gestionarlo.</p>
+      </div>
+      <div id="taller-tablero" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;"></div>
+    </section>
+<section id="vista-inventario" class="vista" >
+  <div class="cabecera-vista" style="margin-bottom: 1.5rem;">
+    <h2 style="margin: 0;">📊 Inventario y Costes</h2>
+    <p style="color:var(--text-soft); margin-top: 0.2rem;">Aquí puedes ver el valor de los productos que tienes en el almacén.</p>
+  </div>
+  <div id="inventario-tablero"></div>
+</section>
+</main>
+
+  
+    
+    
+
+
+  <script src="js/storage.js"></script>
+  <script src="js/modelo.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- ═══════════ MODAL: Selector de catálogo ═══════════ -->
+  <div id="modal-catalogo" class="modal-overlay" hidden>
+    <div class="modal-caja">
+      <header class="modal-cabecera">
+        <h3 id="modal-titulo">Elegir del catálogo</h3>
+        <button class="modal-cerrar" id="modal-cerrar" title="Cerrar (Esc)">✕</button>
+      </header>
+
+      <div class="modal-tabs" id="modal-tabs">
+        <button class="mtab" data-cat="ropa">👕 Ropa</button>
+        <button class="mtab" data-cat="vinilos">🎨 Vinilos</button>
+        <button class="mtab" data-cat="dtf">🖨️ DTF</button>
+        <button class="mtab" data-cat="sublimacion">☕ Sublimación</button>
+        <button class="mtab" data-cat="mano">🛠️ Mano de obra</button>
+      </div>
+
+      <div id="modal-navegacion" style="padding: 0 1rem; margin-top: 0.5rem; display: none;">
+        <button type="button" id="modal-btn-volver" class="btn btn-sm" style="background: var(--bg-soft);">← Volver a carpetas</button>
+        <span id="modal-ruta-actual" style="margin-left: 0.5rem; font-size: 0.85rem; color: var(--text-soft); font-weight: 600;"></span>
+      </div>
+
+      <div class="modal-buscador">
+        <input type="text" id="modal-buscar" placeholder="Buscar..." autocomplete="off">
+      </div>
+
+      <ul class="modal-lista" id="modal-lista"></ul>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODAL: Cliente ═══════════ -->
+  <div id="modal-cliente" class="modal-overlay" hidden>
+    <div class="modal-caja modal-cliente-caja">
+      <header class="modal-cabecera">
+        <h3 id="modal-cliente-titulo">Nuevo cliente</h3>
+        <button type="button" class="modal-cerrar" id="modal-cliente-cerrar" onclick="document.getElementById('modal-cliente').hidden=true;">✕</button>
+      </header>
+
+      <div id="form-cliente" class="modal-cliente-form">
+        <div class="campos-cliente">
+          <div class="campo-full">
+            <label>Tipo de cliente</label>
+            <div class="tipo-tabs" id="cl-tipo-tabs">
+              <button type="button" class="tipo-tab" data-tipo="Particular" onclick="document.querySelectorAll('.tipo-tab').forEach(t=>t.classList.remove('activo'));this.classList.add('activo');document.getElementById('cl-tipo').value='Particular';">
+                <span class="tipo-icon">🙋</span><span>Particular</span>
+              </button>
+              <button type="button" class="tipo-tab" data-tipo="Autónomo" onclick="document.querySelectorAll('.tipo-tab').forEach(t=>t.classList.remove('activo'));this.classList.add('activo');document.getElementById('cl-tipo').value='Autónomo';">
+                <span class="tipo-icon">💼</span><span>Autónomo</span>
+              </button>
+              <button type="button" class="tipo-tab" data-tipo="Empresa" onclick="document.querySelectorAll('.tipo-tab').forEach(t=>t.classList.remove('activo'));this.classList.add('activo');document.getElementById('cl-tipo').value='Empresa';">
+                <span class="tipo-icon">🏢</span><span>Empresa</span>
+              </button>
+            </div>
+            <input type="hidden" id="cl-tipo" value="Particular">
+          </div>
+
+          <div class="campo-full seccion-titulo"><span class="seccion-icon">📝</span> Datos del cliente</div>
+          <div class="campo-full">
+            <label>Nombre / Razón social *</label>
+            <input type="text" id="cl-nombre" placeholder="Ej: Peña Los Trincadores">
+          </div>
+          <div>
+            <label>NIF / CIF</label>
+            <input type="text" id="cl-nif" placeholder="B12345678 / 12345678A">
+          </div>
+          <div>
+            <label>Persona de contacto</label>
+            <input type="text" id="cl-contacto" placeholder="(opcional)">
+          </div>
+
+          <div class="campo-full seccion-titulo"><span class="seccion-icon">📍</span> Dirección</div>
+          <div class="campo-full">
+            <label>Dirección</label>
+            <input type="text" id="cl-direccion" placeholder="Calle / Avenida y número">
+          </div>
+          <div>
+            <label>Código postal</label>
+            <input type="text" id="cl-cp" placeholder="09400">
+          </div>
+          <div>
+            <label>Ciudad</label>
+            <input type="text" id="cl-ciudad" placeholder="Aranda de Duero">
+          </div>
+          <div>
+            <label>Provincia</label>
+            <select id="cl-provincia"></select>
+          </div>
+          <div>
+            <label>País</label>
+            <input type="text" id="cl-pais" value="España">
+          </div>
+
+          <div class="campo-full seccion-titulo"><span class="seccion-icon">📞</span> Contacto</div>
+          <div>
+            <label>Teléfono</label>
+            <input type="text" id="cl-telefono" placeholder="600 000 000">
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" id="cl-email" placeholder="cliente@ejemplo.com">
+          </div>
+          <div class="campo-full">
+            <label>Notas internas</label>
+            <input type="text" id="cl-notas" placeholder="Ej: paga a 30 días...">
+          </div>
+        </div>
+
+        <div class="modal-cliente-acciones">
+          <button type="button" id="cl-borrar" class="btn btn-peligro" style="display:none" onclick="if(window.borrarClienteDesdeModal) window.borrarClienteDesdeModal();">🗑️ Eliminar cliente</button>
+          <button type="button" id="cl-cancelar" class="btn" onclick="document.getElementById('modal-cliente').hidden=true;">Cancelar</button>
+          <button type="button" id="cl-guardar" class="btn btn-primario" onclick="if(window.guardarClienteDesdeModal) window.guardarClienteDesdeModal();">💾 Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODAL: Nueva Carpeta / Bloque ═══════════ -->
+  <div id="modal-nueva-carpeta" class="modal-overlay" hidden>
+    <div class="modal-caja" style="max-width: 460px;">
+      <header class="modal-cabecera">
+        <h3 id="mc-titulo">Nuevo elemento</h3>
+        <button type="button" class="modal-cerrar" onclick="document.getElementById('modal-nueva-carpeta').hidden=true;">✕</button>
+      </header>
+
+      <div class="modal-cliente-form" style="padding: 1rem;">
+        
+        <div class="campo-full">
+          <label>Nombre</label>
+          <input type="text" id="mc-nombre" placeholder="Ej: Polos, Papelería..." style="width:100%;">
+        </div>
+
+        <div class="campo-full" style="margin-top: 1rem;">
+          <label>Icono</label>
+          <div class="emoji-picker-wrapper">
+            <div class="emoji-search">
+              <input type="text" id="mc-buscar-emoji" placeholder="Buscar icono (ej: camiseta, fuego, estrella...)" style="flex:1;">
+              <button type="button" class="btn btn-primario" id="mc-emoji-nativo" title="Abrir teclado del sistema">⌨️ Abrir teclado</button>
+              <a href="https://emojipedia.org/es/buscar?q=" target="_blank" class="btn" id="mc-emoji-web" style="white-space:nowrap; font-size:0.85rem; padding:0.4rem 0.7rem;">🌐 Ver más</a>
+            </div>
+            <div class="emoji-picker" id="mc-emojis">
+              <!-- Los iconos se cargan dinámicamente con JS -->
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+            <input type="text" id="mc-icono-custom" placeholder="O escribe uno..." maxlength="2" style="width:80px; text-align:center;">
+          </div>
+          <div class="campo-full" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
+            <label>🖼️ Foto (ej: ropa.png)</label>
+            <input type="text" id="mc-foto-nombre" placeholder="Ej: ropa.png" style="width:100%;">
+            <small style="color: var(--text-soft); font-size: 0.75rem;">Solo el nombre del archivo. La imagen debe estar en la carpeta /imagenes/.</small>
+          </div>
+        </div>
+
+        <input type="hidden" id="mc-icono" value="📦">
+
+        <div class="modal-cliente-acciones" style="margin-top: 1.5rem;">
+          <button type="button" class="btn" onclick="document.getElementById('modal-nueva-carpeta').hidden=true;">Cancelar</button>
+          <button type="button" id="mc-guardar" class="btn btn-primario">💾 Crear</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════ MODAL: Producto ═══════════ -->
+  <div id="modal-producto" class="modal-overlay" hidden>
+    <div class="modal-caja" style="max-width: 500px;">
+      <header class="modal-cabecera">
+        <h3 id="mp-titulo">Nuevo producto</h3>
+        <button type="button" class="modal-cerrar" onclick="document.getElementById('modal-producto').hidden=true;">✕</button>
+      </header>
+
+      <div class="modal-cliente-form" style="padding: 1rem;">
+        
+        <div class="campo-full">
+          <label>Nombre del producto *</label>
+          <input type="text" id="mp-nombre" placeholder="Ej: Camiseta manga corta blanca" style="width:100%;">
+        </div>
+
+        <div class="campo-full" style="margin-top: 1rem;">
+          <label>Icono del producto</label>
+          <div class="emoji-picker-wrapper">
+            <div class="emoji-search">
+              <input type="text" id="mp-buscar-emoji" placeholder="Buscar icono..." style="flex:1;">
+              <button type="button" class="btn btn-primario" id="mp-emoji-nativo" title="Abrir teclado del sistema">⌨️ Abrir teclado</button>
+              <a href="https://emojipedia.org/es/" target="_blank" id="mp-emoji-web" class="btn" style="white-space:nowrap; font-size:0.85rem; padding:0.4rem 0.7rem;">🌐 Ver más</a>
+            </div>
+            <div class="emoji-picker" id="mp-emojis">
+              <!-- Los iconos se cargan dinámicamente con JS -->
+            </div>
+            <div style="margin-top: 0.3rem;">
+              <input type="text" id="mp-icono-custom" placeholder="Pega aquí un emoji de internet..." style="width: 100%; text-align: left; padding: 0.6rem; font-size: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            </div>
+            <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--border);">
+              <label style="font-weight:bold; font-size:0.85rem; display:block; margin-bottom:0.3rem;">🖼️ Foto (ej: camiseta.png)</label>
+              <input type="text" id="mp-foto-nombre" placeholder="Ej: roly_blanco.png" style="width: 100%; padding: 0.6rem; font-size: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <small style="color: var(--text-soft); font-size: 0.75rem;">Solo el nombre del archivo. La imagen debe estar en la carpeta /imagenes/.</small>
+            </div>
+            <input type="hidden" id="mp-icono" value="📦">
+          </div>
+        </div>
+
+        <div class="fila" style="margin-top: 1rem;">
+          <div class="campo">
+            <label>Precio Coste (€)</label>
+            <input type="number" step="0.01" id="mp-coste" placeholder="0.00" style="width:100%;">
+          </div>
+          <div class="campo">
+            <label>Stock inicial (uds)</label>
+            <input type="number" id="mp-stock" placeholder="0" style="width:100%;">
+          </div>
+        </div>
+
+        <div class="fila" style="margin-top: 0.5rem;">
+          <div class="campo">
+            <label>Precio Base (sin IVA) *</label>
+            <input type="number" step="0.01" id="mp-precio-base" placeholder="0.00" style="width:100%;">
+          </div>
+          <div class="campo">
+            <label>IVA (%)</label>
+            <input type="number" step="1" id="mp-iva" value="21" style="width:100%;">
+          </div>
+          <div class="campo">
+            <label>Precio Final (con IVA) *</label>
+            <input type="number" step="0.01" id="mp-precio-final" placeholder="0.00" style="width:100%; background: var(--bg-soft); font-weight: 700; color: var(--primary);">
+          </div>
+        </div>
+
+        <!-- SECCIÓN DE VARIANTES (Color + Talla) -->
+        <div id="mp-seccion-variantes" class="campo-full" style="margin-top: 1rem; display: none; background: var(--bg-soft); padding: 1rem; border-radius: var(--radius-sm);">
+    <div style="margin-bottom: 1rem;">
+      <label style="font-weight:bold; font-size:0.85rem; margin-bottom:0.3rem; display:block;">Tipo de variante:</label>
+        <option value="ninguna">Sin variantes (Producto simple)</option>
+        <option value="color">Solo Color</option>
+        <option value="color_talla">Color y Talla (Ropa)</option>
+      </select>
+    </div>
+    
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label style="font-weight: 600; margin: 0;">🧬 Variantes (Color + Talla)</label>
+            <small style="color: var(--text-soft);">Stock total: <span id="mp-stock-total" style="font-weight:bold;">0</span></small>
+          </div>
+          
+          <table class="tabla" style="margin-bottom: 0.5rem;">
+            <thead>
+              <tr>
+                <th>Color</th>
+                <th>Talla</th>
+                <th style="width: 80px;">Cantidad</th>
+                <th style="width: 40px;"></th>
+              </tr>
+            </thead>
+            <tbody id="mp-lista-variantes">
+              <!-- Filas dinámicas -->
+            </tbody>
+          </table>
+          <button type="button" id="mp-add-variante" class="btn btn-sm">+ Añadir variante</button>
+        </div>
+
+        <div class="campo-full" style="margin-top: 0.5rem;">
+          <label>Notas</label>
+          <input type="text" id="mp-notas" placeholder="Ej: Algodón 100%, pecho logo..." style="width:100%;">
+        </div>
+
+        <div class="modal-cliente-acciones" style="margin-top: 1.5rem;">
+          <button type="button" class="btn" onclick="document.getElementById('modal-producto').hidden=true;">Cancelar</button>
+          <button type="button" id="mp-guardar" class="btn btn-primario">💾 Guardar producto</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════ MODAL: Registro de entrada (FIX) ═══════════ -->
+  <div id="modal-entrada" class="modal-overlay" hidden>
+    <div class="modal-caja" style="max-width: 600px;">
+      <header class="modal-cabecera">
+        <h3>Registrar entrada de material</h3>
+        <button type="button" class="modal-cerrar" onclick="document.getElementById('modal-entrada').hidden=true;">✕</button>
+      </header>
+
+      <div class="modal-cliente-form" style="padding: 1rem;">
+        
+        <div class="fila">
+          <div class="campo" style="flex:1">
+            <label>Cliente *</label>
+            <select id="me-cliente" style="width:100%">
+              <option value="">— Elige cliente —</option>
+            </select>
+          </div>
+          <div class="campo" style="flex:0 0 150px">
+            <label>Fecha</label>
+            <input type="date" id="me-fecha" style="width:100%;">
+          </div>
+        </div>
+
+        <div class="campo-full" style="margin-top: 1rem;">
+          <label>Descripción / Notas (opcional)</label>
+          <input type="text" id="me-notas" placeholder="Ej: Ropa de entrenamiento temporada 24/25" style="width:100%;">
+        </div>
+
+        <div class="campo-full" style="margin-top: 1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <label style="margin:0;">Añadir rápido (cosas comunes)</label>
+            <button type="button" class="btn btn-sm" id="btn-config-comunes" style="padding:0.1rem 0.4rem; font-size:0.8rem;">⚙️ Configurar</button>
+          </div>
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;" id="me-botones-comunes">
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Camisetas">👕 Camisetas</button>
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Sudaderas">🧥 Sudaderas</button>
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Pantalones cortos">🩳 Pantalones cortos</button>
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Pantalones largos">👖 Pantalones largos</button>
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Tazas">☕ Tazas</button>
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Botellas">🍶 Botellas</button>
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Llaveros">🔑 Llaveros</button>
+            <button type="button" class="btn btn-sm btn-comun" data-nombre="Peluches">🧸 Peluches</button>
+          </div>
+
+          <label>Desglose de la entrada</label>
+          <table class="tabla" style="margin-top:0.5rem;">
+            <thead>
+              <tr>
+                <th>Concepto</th>
+                <th style="width:100px">Cantidad</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody id="me-lineas">
+              <!-- Filas dinámicas -->
+            </tbody>
+          </table>
+          <button type="button" id="me-add-linea" class="btn btn-sm" style="margin-top:0.5rem;">+ Añadir línea manualmente</button>
+        </div>
+
+        <div class="modal-cliente-acciones" style="margin-top: 1.5rem;">
+          <button type="button" class="btn" onclick="document.getElementById('modal-entrada').hidden=true;">Cancelar</button>
+          <button type="button" id="me-guardar" class="btn btn-primario" onclick="if(window.guardarRegistroEntrada) { window.guardarRegistroEntrada(); } else { alert('Error: la función de guardado no está cargada.'); }">💾 Guardar registro</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODAL: Configurar cosas comunes ═══════════ -->
+  <div id="modal-config-comunes" class="modal-overlay" hidden>
+    <div class="modal-caja" style="max-width: 500px;">
+      <header class="modal-cabecera">
+        <h3>Configurar botones rápidos</h3>
+        <button type="button" class="modal-cerrar" onclick="document.getElementById('modal-config-comunes').hidden=true;">✕</button>
+      </header>
+
+      <div class="modal-cliente-form" style="padding: 1rem;">
+        <p class="hint" style="margin-bottom:1rem;">Añade las cosas que más te traen los clientes para poder registrarlas con un solo clic.</p>
+        
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th style="width:80px">Icono</th>
+              <th style="width:40px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-config-comunes">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
+        
+        <button type="button" id="btn-add-comun" class="btn btn-sm" style="margin-top:0.5rem;">+ Añadir nueva opción</button>
+
+        <div class="modal-cliente-acciones" style="margin-top: 1.5rem;">
+          <button type="button" class="btn" onclick="document.getElementById('modal-config-comunes').hidden=true;">Cancelar</button>
+          <button type="button" id="btn-guardar-comunes" class="btn btn-primario">💾 Guardar configuración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODAL: Selector de líneas ═══════════ -->
+  
+  <!-- ═══════════ MODAL: Selector de Productos y Trabajos ═══════════ -->
+  <div id="modal-selector" class="modal-overlay" hidden>
+    <div class="modal-caja" style="max-width: 600px;">
+      <header class="modal-cabecera">
+        <h3>Elegir para el presupuesto</h3>
+        <button type="button" class="modal-cerrar" id="modal-selector-cerrar">✕</button>
+      </header>
+
+      <div class="modal-tabs">
+        <button type="button" class="mtab activa" data-tab="productos">📦 Productos</button>
+        <button type="button" class="mtab" data-tab="trabajos">🛠️ Trabajos</button>
+      </div>
+
+      <div id="modal-selector-navegacion" style="padding: 0 1rem; margin-top: 0.5rem; display: none; align-items: center; gap: 0.5rem;">
+        <button type="button" id="modal-selector-volver" class="btn btn-sm" style="background: var(--bg-soft);">← Volver</button>
+        <span id="modal-selector-ruta" style="font-size: 0.85rem; color: var(--text-soft); font-weight: 600;"></span>
+      </div>
+
+      <div style="padding: 0.75rem 1rem;">
+        <input type="text" id="modal-selector-buscar" placeholder="Buscar..." style="width:100%;">
+      </div>
+
+      <ul id="modal-selector-lista" style="max-height: 400px; overflow-y: auto; padding: 0 0.5rem 1rem; list-style: none; margin: 0;">
+        <!-- Lista dinámica -->
+      </ul>
+    </div>
+  </div>
+
+<script src="js/dashboard.js"></script>
+
+<script src="js/taller.js"></script>
+
+<script src="js/taller.js"></script>
+
+<script src="js/inventario.js"></script>
+
+<footer class="statusbar">
+    <span id="status-info">ArandaCrafts · v0.1</span>
+  </footer>
+
+<script src="js/manual.js"></script>
+<script src="js/ayuda-contextual.js"></script>
+</body>
+
+</html>
+
+
+
+<style>
+  #vista-taller .cabecera-vista { margin-top: 0 !important; padding-top: 0 !important; }
+  #vista-taller h2 { margin-top: 0 !important; }
+</style>
+<style>
+
+
+
+<style>
+  /* Igualar el diseño de Taller e Inventario al resto de pestañas, pero sin huecos */
+  #vista-taller, #vista-inventario {
+    padding-top: 2rem !important; /* El mismo padding que usa la clase .contenido */
+    margin-top: 0 !important;
+  }
+  
+  /* Asegurar que la cabecera no tenga margen extra */
+  #vista-taller .cabecera-vista,
+  #vista-inventario .cabecera-vista {
+    margin-top: 0 !important;
+  }
+</style>
+<style>
+  .dash-mini-card { background: var(--bg-soft); border-radius: 8px; padding: 1rem; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .dash-mini-card h4 { margin: 0; font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; }
+  .dash-mini-card .val { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+  .dash-panel { background: var(--bg-soft); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border); }
+  .dash-lista { list-style: none; padding: 0; margin: 0; }
+  .dash-lista li { padding: 0.8rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .top-venta-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0; border-bottom: 1px dashed var(--border); }
+  .top-venta-num { background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; }
+  .top-venta-info { flex: 1; }
+  .top-venta-titulo { font-weight: 600; font-size: 0.9rem; }
+  .top-venta-cat { font-size: 0.75rem; color: var(--text-soft); }
+  .top-venta-stats { text-align: right; }
+  .top-venta-cant { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+</style>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var ayudas = {
+    'inicio': 'Panel de control: Resumen de clientes, cobros, pendientes, inversión en stock, pedidos urgentes y ventas.',
+    'registro': 'Registro de entrada: Apunta el material que te traen los clientes para vincularlo a presupuestos.',
+    'presupuestos': 'Presupuestos: Crea documentos, añade líneas, gestiona estados y controla si están cobrados.',
+    'taller': 'Tablero de Taller: Pedidos aceptados organizados por urgencia (semáforo de fechas de entrega).',
+    'stock': 'Productos (Stock): Catálogo por carpetas. Gestiona productos simples o con variantes (Color y Talla).',
+    'inventario': 'Inventario: Valor total del almacén (Stock x Precio de Coste) y número de unidades.',
+    'trabajos': 'Trabajos: Tarifas de servicios (horas, unidades, envíos) para añadir a los presupuestos.',
+    'clientes': 'Clientes: Base de datos con historial de deudas y documentos clicables.',
+    'ajustes': 'Ajustes: Datos fiscales, backup, tema claro/oscuro y zona peligrosa.'
+  };
+
+  // Añadimos estilos para el tooltip
+  var style = document.createElement('style');
+  style.innerHTML = `
+    .btn-ayuda-seccion {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--text-soft);
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: help;
+      margin-left: auto; /* Empuja a la derecha */
+      transition: all 0.2s;
+    }
+    .btn-ayuda-seccion:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    
+    .ayuda-tooltip {
+      position: absolute;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      padding: 0.8rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--text);
+      z-index: 1000;
+      max-width: 250px;
+      display: none;
+      line-height: 1.4;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Recorremos las secciones
+  document.querySelectorAll('.vista').forEach(function(vista) {
+    var id = vista.id.replace('vista-', '');
+    var textoAyuda = ayudas[id];
+    if (!textoAyuda) return;
+
+    // Buscamos el contenedor de la cabecera (para alinear el icono a la derecha)
+    var cabecera = vista.querySelector('.clientes-cabecera') || vista.querySelector('.cabecera-vista') || vista.querySelector('h1') || vista.querySelector('h2');
+    
+    if (cabecera) {
+      // Creamos un contenedor flex para el título y el icono
+      var headerWrapper = cabecera;
+      
+      // Si es un h1 o h2 directo, lo envolvemos
+      if (cabecera.tagName === 'H1' || cabecera.tagName === 'H2') {
+          var div = document.createElement('div');
+          div.style.cssText = 'display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom: 1rem;';
+          cabecera.parentNode.insertBefore(div, cabecera);
+          div.appendChild(cabecera);
+          headerWrapper = div;
+      } else {
+          // Si ya es un contenedor (como .clientes-cabecera), nos aseguramos de que sea flex
+          headerWrapper.style.display = 'flex';
+          headerWrapper.style.alignItems = 'center';
+          headerWrapper.style.justifyContent = 'space-between';
+      }
+
+      // Creamos el botón
+      var btnAyuda = document.createElement('button');
+      btnAyuda.innerHTML = '?';
+      btnAyuda.className = 'btn-ayuda-seccion';
+      
+      // Creamos el tooltip
+      var tooltip = document.createElement('div');
+      tooltip.className = 'ayuda-tooltip';
+      tooltip.textContent = textoAyuda;
+      
+      // Lo metemos en el body para que flote por encima de todo
+      document.body.appendChild(tooltip);
+
+      // Eventos para mostrar/ocultar el tooltip
+      btnAyuda.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var rect = btnAyuda.getBoundingClientRect();
+        tooltip.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+        tooltip.style.left = (rect.right + window.scrollX - 250) + 'px'; // Alineado a la derecha
+        
+        if (tooltip.style.display === 'block') {
+          tooltip.style.display = 'none';
+        } else {
+          tooltip.style.display = 'block';
+        }
+      };
+
+      // Ocultar al hacer clic fuera
+      document.addEventListener('click', function(e) {
+        if (e.target !== btnAyuda && !tooltip.contains(e.target)) {
+          tooltip.style.display = 'none';
+        }
+      });
+
+      headerWrapper.appendChild(btnAyuda);
+    }
+  });
+  console.log("✅ Botones de ayuda discretos insertados.");
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Buscamos la sección de presupuestos
+  var vistaPresu = document.getElementById('vista-presupuestos');
+  if (!vistaPresu) return;
+
+  // Buscamos el contenedor de la barra de acciones (donde está el botón de nuevo presupuesto)
+  var barraAcciones = vistaPresu.querySelector('.barra-acciones');
+  
+  if (barraAcciones && !barraAcciones.querySelector('.btn-ayuda-presu')) {
+    var btnAyuda = document.createElement('button');
+    btnAyuda.innerHTML = '?';
+    btnAyuda.className = 'btn-ayuda-seccion btn-ayuda-presu';
+    btnAyuda.title = "Ayuda sobre Presupuestos";
+    
+    // Estilos para que encaje en la barra
+    btnAyuda.style.cssText = 'margin-left: auto; margin-right: 0.5rem; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; color: var(--text-soft);';
+    
+    // Creamos el tooltip
+    var tooltip = document.createElement('div');
+    tooltip.style.cssText = 'position: absolute; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0.8rem; border-radius: 6px; font-size: 0.85rem; color: var(--text); z-index: 1000; max-width: 250px; display: none; line-height: 1.4;';
+    tooltip.textContent = 'Presupuestos: Crea documentos, añade líneas, gestiona estados y controla si están cobrados o pendientes. Puedes imprimir en PDF.';
+    document.body.appendChild(tooltip);
+
+    // Lógica para mostrar/ocultar
+    btnAyuda.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      var rect = btnAyuda.getBoundingClientRect();
+      tooltip.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+      tooltip.style.left = (rect.right + window.scrollX - 250) + 'px';
+      
+      if (tooltip.style.display === 'block') {
+        tooltip.style.display = 'none';
+      } else {
+        tooltip.style.display = 'block';
+      }
+    };
+
+    document.addEventListener('click', function(e) {
+      if (e.target !== btnAyuda && !tooltip.contains(e.target)) {
+        tooltip.style.display = 'none';
+      }
+    });
+
+    // Lo metemos en la barra de acciones
+    barraAcciones.appendChild(btnAyuda);
+    console.log("✅ Botón de ayuda añadido a Presupuestos.");
+  }
+});
+</script>
+
+
+
+
