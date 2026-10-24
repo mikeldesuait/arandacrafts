@@ -5370,3 +5370,108 @@ document.addEventListener('click', function(e) {
     };
   }
 })();
+
+/* PARCHE DEFINITIVO: GUARDAR Y MOSTRAR FOTOS EN TARJETAS */
+(function() {
+  var BASE_URL = 'https://mikeldesuait.github.io/arandacrafts/imagenes/';
+
+  // 1. Aseguramos que el nombre de la foto se guarda en el producto
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'mp-guardar') {
+      setTimeout(function() {
+        var prodId = window._prodEditandoId;
+        if (!prodId) return;
+
+        var fotoInput = document.getElementById('mp-foto-nombre');
+        var foto = fotoInput ? fotoInput.value.trim() : '';
+
+        // Leemos la estructura actual
+        var estructura = JSON.parse(localStorage.getItem('arandacrafts:stock:estructura') || '[]');
+        var encontrado = false;
+
+        // Buscamos el producto por ID y le asignamos la foto
+        estructura.forEach(function(cat) {
+          (cat.categorias || []).forEach(function(sub) {
+            (sub.productos || []).forEach(function(p) {
+              if (p.id === prodId) {
+                if (foto) {
+                  p.foto = foto;
+                } else {
+                  delete p.foto;
+                }
+                encontrado = true;
+              }
+            });
+          });
+        });
+
+        // Guardamos en localStorage
+        if (encontrado) {
+          localStorage.setItem('arandacrafts:stock:estructura', JSON.stringify(estructura));
+          console.log('✅ Foto guardada en localStorage:', foto);
+        }
+
+        // Forzamos el repintado
+        if (window.renderStock) {
+          window.renderStock();
+        }
+      }, 300); // Esperamos a que el guardado original termine
+    }
+  }, true);
+
+  // 2. Al pintar las tarjetas, buscamos la foto por ID (más fiable que por nombre)
+  var _renderStockOrig = window.renderStock;
+  if (_renderStockOrig) {
+    window.renderStock = function() {
+      _renderStockOrig.apply(this, arguments);
+
+      // Recorremos todas las tarjetas
+      var tarjetas = document.querySelectorAll('.tarjeta-stock');
+      tarjetas.forEach(function(tarjeta) {
+        var tituloEl = tarjeta.querySelector('.tarjeta-titulo');
+        var iconoEl = tarjeta.querySelector('.tarjeta-icono');
+        if (!tituloEl || !iconoEl) return;
+
+        var nombre = tituloEl.textContent.trim();
+        var estructura = window.Modelo.getStockEstructura() || [];
+        var foto = null;
+
+        // Buscamos por nombre (más fiable que por ID en este contexto)
+        estructura.forEach(function(cat) {
+          // Buscar en bloques
+          if (cat.nombre === nombre && cat.foto) {
+            foto = cat.foto;
+          }
+          (cat.categorias || []).forEach(function(sub) {
+            // Buscar en subcarpetas
+            if (sub.nombre === nombre && sub.foto) {
+              foto = sub.foto;
+            }
+            // Buscar en productos
+            (sub.productos || []).forEach(function(p) {
+              if (p.nombre === nombre && p.foto) {
+                foto = p.foto;
+              }
+            });
+          });
+        });
+
+        // Si encontramos foto, la pintamos
+        if (foto) {
+          var url = BASE_URL + foto;
+          iconoEl.innerHTML = '<img src="' + url + '" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display=\'none\'; this.parentNode.innerHTML=\'' + iconoEl.textContent + '\';">';
+        }
+      });
+    };
+  }
+
+  // 3. Forzamos un repintado al cargar la página
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      if (window.renderStock) {
+        window.renderStock();
+        console.log('✅ Repintado forzado al cargar.');
+      }
+    }, 500);
+  });
+})();
