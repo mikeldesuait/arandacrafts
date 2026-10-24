@@ -15,7 +15,65 @@
   // ─────────────────────────────────────────────
   // 1. RELLENAR CAMPOS AL ABRIR LOS MODALES
   // ─────────────────────────────────────────────
-  function envolverAbrirProducto() {
+  
+  // ─────────────────────────────────────────────
+  // 2.5 AÑADIR BOTONES DE ORDENAR EN LAS VARIANTES
+  // ─────────────────────────────────────────────
+  function inyectarBotonesOrden() {
+    var tbody = document.getElementById('mp-lista-variantes');
+    if (!tbody) return;
+
+    tbody.querySelectorAll('tr').forEach(function(tr) {
+      // Si ya tiene los botones, no hacer nada
+      if (tr.querySelector('.btn-ordenar')) return;
+
+      var tdAcciones = tr.lastElementChild;
+      if (!tdAcciones) return;
+
+      // Crear los dos botones (⬆️ y ⬇️) antes del botón de borrar
+      var btnSubir = document.createElement('button');
+      btnSubir.type = 'button';
+      btnSubir.className = 'btn btn-sm btn-ordenar';
+      btnSubir.innerHTML = '⬆️';
+      btnSubir.title = 'Subir variante';
+      btnSubir.style.cssText = 'padding: 0.2rem 0.4rem; font-size: 0.7rem; margin-right: 2px; background: transparent; border: none; cursor: pointer;';
+      
+      var btnBajar = document.createElement('button');
+      btnBajar.type = 'button';
+      btnBajar.className = 'btn btn-sm btn-ordenar';
+      btnBajar.innerHTML = '⬇️';
+      btnBajar.title = 'Bajar variante';
+      btnBajar.style.cssText = 'padding: 0.2rem 0.4rem; font-size: 0.7rem; margin-right: 2px; background: transparent; border: none; cursor: pointer;';
+
+      btnSubir.onclick = function() {
+        var anterior = tr.previousElementSibling;
+        if (anterior) {
+          tbody.insertBefore(tr, anterior);
+        }
+      };
+
+      btnBajar.onclick = function() {
+        var siguiente = tr.nextElementSibling;
+        if (siguiente) {
+          tbody.insertBefore(siguiente, tr);
+        }
+      };
+
+      // Insertarlos antes del botón de eliminar
+      tdAcciones.insertBefore(btnSubir, tdAcciones.firstChild);
+      tdAcciones.insertBefore(btnBajar, btnSubir.nextSibling);
+    });
+  }
+
+  // Envolver abrirModalProducto para inyectar los botones después de pintar las filas
+  var _abrirProdConBotones = window.abrirModalProducto;
+  window.abrirModalProducto = function(prod) {
+    _abrirProdConBotones.apply(this, arguments);
+    // Un pequeño delay para que el modal original termine de pintar las filas
+    setTimeout(inyectarBotonesOrden, 50);
+  };
+
+function envolverAbrirProducto() {
     var orig = window.abrirModalProducto;
     if (!orig) { setTimeout(envolverAbrirProducto, 100); return; }
 
@@ -263,6 +321,8 @@
     envolverAbrirProducto();
     envolverAbrirCarpeta();
     instalarHandlerGuardarProducto();
+    // Inyectar botones de orden en las variantes al abrir el modal
+    setTimeout(inyectarBotonesOrden, 200);
     configurarObservadorFotos();
     console.log('✅ Módulo de fotos cargado');
   });
