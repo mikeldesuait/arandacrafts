@@ -5242,3 +5242,131 @@ document.addEventListener('click', function(e) {
     }, 300); // Esperar a que el guardado original termine
   }
 }, true);
+
+
+
+/* PARCHE: FOTOS POR NOMBRE DE ARCHIVO (PRODUCTOS Y CARPETAS) */
+(function() {
+  var BASE_URL = 'https://mikeldesuait.github.io/arandacrafts/imagenes/';
+
+  // 1. Al abrir el modal de PRODUCTO, rellenar el campo con la foto guardada
+  var _abrirProdOrig = window.abrirModalProducto;
+  if (_abrirProdOrig) {
+    window.abrirModalProducto = function(prod) {
+      _abrirProdOrig(prod);
+      var fotoInput = document.getElementById('mp-foto-nombre');
+      if (fotoInput) {
+        fotoInput.value = (prod && prod.foto) ? prod.foto : '';
+      }
+    };
+  }
+
+  // 2. Al abrir el modal de CARPETA, rellenar el campo con la foto guardada
+  var _abrirCarpetaOrig = window.abrirModalCarpeta;
+  if (_abrirCarpetaOrig) {
+    window.abrirModalCarpeta = function(titulo, datosActuales, callback) {
+      _abrirCarpetaOrig(titulo, datosActuales, callback);
+      var fotoInput = document.getElementById('mc-foto-nombre');
+      if (fotoInput) {
+        fotoInput.value = (datosActuales && datosActuales.foto) ? datosActuales.foto : '';
+      }
+    };
+  }
+
+  // 3. Guardar la foto del PRODUCTO
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'mp-guardar') {
+      setTimeout(function() {
+        var prodId = window._prodEditandoId;
+        if (!prodId) return;
+        var fotoInput = document.getElementById('mp-foto-nombre');
+        var foto = fotoInput ? fotoInput.value.trim() : '';
+        var estructura = JSON.parse(localStorage.getItem('arandacrafts:stock:estructura') || '[]');
+        var encontrado = false;
+        estructura.forEach(function(cat) {
+          (cat.categorias || []).forEach(function(sub) {
+            (sub.productos || []).forEach(function(p) {
+              if (p.id === prodId) {
+                if (foto) { p.foto = foto; } else { delete p.foto; }
+                encontrado = true;
+              }
+            });
+          });
+        });
+        if (encontrado) {
+          localStorage.setItem('arandacrafts:stock:estructura', JSON.stringify(estructura));
+          console.log('✅ Foto de producto guardada:', foto || '(sin foto)');
+          if (window.renderStock) window.renderStock();
+        }
+      }, 300);
+    }
+  }, true);
+
+  // 4. Guardar la foto de la CARPETA (bloque o subcarpeta)
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'mc-guardar') {
+      setTimeout(function() {
+        var nombreInput = document.getElementById('mc-nombre');
+        var nombre = nombreInput ? nombreInput.value.trim() : '';
+        if (!nombre) return;
+        var fotoInput = document.getElementById('mc-foto-nombre');
+        var foto = fotoInput ? fotoInput.value.trim() : '';
+
+        var estructura = JSON.parse(localStorage.getItem('arandacrafts:stock:estructura') || '[]');
+        var encontrado = false;
+
+        // Comprobamos si el nombre coincide con un bloque o una subcarpeta
+        estructura.forEach(function(cat) {
+          if (cat.nombre === nombre) {
+            if (foto) { cat.foto = foto; } else { delete cat.foto; }
+            encontrado = true;
+          }
+          (cat.categorias || []).forEach(function(sub) {
+            if (sub.nombre === nombre) {
+              if (foto) { sub.foto = foto; } else { delete sub.foto; }
+              encontrado = true;
+            }
+          });
+        });
+
+        if (encontrado) {
+          localStorage.setItem('arandacrafts:stock:estructura', JSON.stringify(estructura));
+          console.log('✅ Foto de carpeta guardada:', foto || '(sin foto)');
+          if (window.renderStock) window.renderStock();
+        }
+      }, 300);
+    }
+  }, true);
+
+  // 5. Al pintar las tarjetas, mostrar la foto si existe
+  var _renderStockOrig = window.renderStock;
+  if (_renderStockOrig) {
+    window.renderStock = function() {
+      _renderStockOrig.apply(this, arguments);
+      var tarjetas = document.querySelectorAll('.tarjeta-stock');
+      tarjetas.forEach(function(tarjeta) {
+        var tituloEl = tarjeta.querySelector('.tarjeta-titulo');
+        var iconoEl = tarjeta.querySelector('.tarjeta-icono');
+        if (!tituloEl || !iconoEl) return;
+        var nombre = tituloEl.textContent.trim();
+        var estructura = window.Modelo.getStockEstructura() || [];
+        var foto = null;
+
+        estructura.forEach(function(cat) {
+          if (cat.nombre === nombre && cat.foto) foto = cat.foto;
+          (cat.categorias || []).forEach(function(sub) {
+            if (sub.nombre === nombre && sub.foto) foto = sub.foto;
+            (sub.productos || []).forEach(function(p) {
+              if (p.nombre === nombre && p.foto) foto = p.foto;
+            });
+          });
+        });
+
+        if (foto) {
+          var url = BASE_URL + foto;
+          iconoEl.innerHTML = '<img src="' + url + '" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display=\'none\'; this.parentNode.innerHTML=\'' + iconoEl.textContent + '\';">';
+        }
+      });
+    };
+  }
+})();
