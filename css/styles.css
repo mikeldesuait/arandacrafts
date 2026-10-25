@@ -1473,3 +1473,28 @@ a:hover { text-decoration: underline; }
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 3px var(--primary-soft) !important;
 }
+
+/* ── FIX VISUAL: Alinear tarjetas arriba y ajustar al contenido ── */
+#registro-lista.grid-tarjetas {
+  align-items: start; /* Hace que todas las tarjetas se alineen arriba */
+}
+
+#registro-lista .tarjeta-stock {
+  height: auto !important; /* Evita que se estiren a lo alto */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Justifica el contenido arriba */
+}
+
+/* ── FIX VISUAL: Forzar alineación arriba en tarjetas de registro ── */
+#registro-lista .tarjeta-stock {
+  justify-content: flex-start !important; 
+  align-items: stretch !important;
+  padding-top: 1rem !important;
+  height: auto !important;
+}
+
+/* Aseguramos que el contenido interior también empiece arriba */
+#registro-lista .tarjeta-stock > * {
+  text-align: left;
+}

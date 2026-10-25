@@ -405,7 +405,7 @@ function agregarFilaVariante(color, talla, cantidad) {
   if (!tbody) return;
 
   var COLORES = ['Blanco', 'Negro', 'Rojo', 'Azul', 'Verde', 'Gris', 'Amarillo', 'Naranja', 'Rosa', 'Morado'];
-  var TALLAS = ['Sin talla', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Única'];
+  var TALLAS = ['', '2XL', 'XL', 'L', 'M', 'S', 'XS', '2XS', '3XS', '4XS', '5XS', '6XS'];
 
   var tr = document.createElement('tr');
   tr.innerHTML =
@@ -1108,11 +1108,30 @@ window.guardarTrabajos = function() {
       card.style.cursor = 'pointer';
 
       var htmlLineas = '';
+      var agrupado = {};
+      
+      // Agrupamos las líneas por concepto
       (r.lineas || []).forEach(function(l) {
-        htmlLineas += '<div style="font-size:0.85rem; display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding: 0.2rem 0;">' +
-                        '<span>' + window.escapar(l.concepto) + '</span>' +
-                        '<strong>' + l.cantidad + '</strong>' +
-                      '</div>';
+        if (!agrupado[l.concepto]) {
+          agrupado[l.concepto] = { total: 0, tallas: [] };
+        }
+        agrupado[l.concepto].total += l.cantidad;
+        if (l.talla) {
+          agrupado[l.concepto].tallas.push(l.talla + ': ' + l.cantidad);
+        }
+      });
+
+      // Pintamos el resumen agrupado
+      Object.keys(agrupado).forEach(function(concepto) {
+        var grupo = agrupado[concepto];
+        
+        htmlLineas += '<div style="margin-bottom: 0.4rem; border-bottom: 1px dashed var(--border); padding-bottom: 0.4rem;">' +
+          '<div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">' +
+            '<span>' + window.escapar(concepto) + '</span>' +
+            '<span>' + grupo.total + ' uds</span>' +
+          '</div>' +
+          (grupo.tallas.length > 0 ? '<div style="font-size: 0.7rem; color: var(--text-soft); margin-top: 0.2rem; line-height: 1.2;">' + grupo.tallas.join(' · ') + '</div>' : '') +
+        '</div>';
       });
 
       card.innerHTML =
@@ -1153,7 +1172,74 @@ window.guardarTrabajos = function() {
   };
 
   // ── Abrir el modal para crear/editar ──
-  window.abrirModalRegistro = function(registro) {
+  
+  // ── NUEVA FUNCIÓN: Fila con múltiples tallas ──
+  function crearFilaMultiplesTallas(conceptoBase) {
+    var tr = document.createElement('tr');
+    
+    tr.innerHTML =
+      '<td colspan="3" style="padding: 0.5rem;">' +
+        '<div style="display:flex; flex-direction:column; gap:0.5rem; width: 100%;">' +
+          '<div style="display:flex; gap:0.5rem; align-items:center;">' +
+            '<input type="text" class="inp-con" value="' + conceptoBase + '" style="flex:1; font-weight:bold;">' +
+            '<button type="button" class="btn btn-sm btn-primario btn-toggle-tallas" style="white-space:nowrap; font-size:0.75rem; padding: 0.3rem 0.6rem;">➖ Ocultar tallas</button>' +
+            '<button type="button" class="btn btn-sm btn-peligro btn-del-linea" style="padding: 0.2rem 0.5rem; margin-left: 0.5rem;">✕</button>' +
+          '</div>' +
+          '<div class="panel-tallas" style="background:#f8f9fa; border:1px solid var(--border); border-radius:6px; padding:0.8rem; width: 100%; box-sizing: border-box;">' +
+            '<div class="lista-tallas-dinamicas" style="display:grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; margin-bottom: 0.8rem;"></div>' +
+            '<button type="button" class="btn btn-sm btn-add-talla-custom" style="font-size:0.75rem; padding:0.3rem 0.6rem;">+ Otra talla</button>' +
+          '</div>' +
+        '</div>' +
+      '</td>';
+
+    // Lista completa de tallas
+    var TALLAS_BASE = ['2XL', 'XL', 'L', 'M', 'S', 'XS', '6XS', '5XS', '4XS', '3XS', '2XS'];
+    var listaTallas = tr.querySelector('.lista-tallas-dinamicas');
+
+    function crearInputTalla(nombre) {
+      var div = document.createElement('div');
+      div.style.cssText = 'display:flex; flex-direction:column; align-items:center;';
+      div.innerHTML = 
+        '<span style="font-size:0.7rem; font-weight:bold; color:var(--text-soft); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">' + nombre + '</span>' +
+        '<input type="number" min="0" class="inp-cant-talla" data-talla="' + nombre + '" placeholder="0" style="width:100%; padding:0.3rem 0.1rem; font-size:0.85rem; text-align:center; border:1px solid var(--border); border-radius:4px; box-sizing: border-box;">';
+      listaTallas.appendChild(div);
+    }
+
+    // Crear TODAS las casillas de golpe
+    TALLAS_BASE.forEach(function(t) { crearInputTalla(t); });
+
+    // Toggle del panel
+    var btnToggle = tr.querySelector('.btn-toggle-tallas');
+    var panel = tr.querySelector('.panel-tallas');
+    btnToggle.onclick = function() {
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        btnToggle.textContent = '➖ Ocultar tallas';
+        btnToggle.style.background = 'var(--bg-soft)';
+        btnToggle.style.color = 'var(--text)';
+      } else {
+        panel.style.display = 'none';
+        btnToggle.textContent = '➕ Añadir tallas';
+        btnToggle.style.background = 'var(--primary)';
+        btnToggle.style.color = 'white';
+      }
+    };
+
+    // Añadir talla personalizada
+    var btnAddCustom = tr.querySelector('.btn-add-talla-custom');
+    btnAddCustom.onclick = function() {
+      var nuevaTalla = prompt('Escribe el nombre de la nueva talla (ej: 3XL, 36, Infantil):');
+      if (nuevaTalla && nuevaTalla.trim()) {
+        crearInputTalla(nuevaTalla.trim().toUpperCase());
+      }
+    };
+
+    tr.querySelector('.btn-del-linea').onclick = function() { tr.remove(); };
+    
+    return tr;
+  }
+
+window.abrirModalRegistro = function(registro) {
     window._registroEditandoId = registro ? registro.id : null;
     
     var sel = document.getElementById('me-cliente');
@@ -1175,7 +1261,17 @@ window.guardarTrabajos = function() {
       btn.textContent = c.icono + ' ' + c.nombre;
       btn.onclick = function() {
         var tbody = document.getElementById('me-lineas');
-        tbody.appendChild(nuevaLineaRegistro(c.nombre, 1));
+        // Si el concepto incluye "camiseta", "sudadera" o similar, creamos la fila de múltiples tallas
+        var esRopa = c.nombre.toLowerCase().indexOf('camiseta') >= 0 || 
+                     c.nombre.toLowerCase().indexOf('sudadera') >= 0 || 
+                     c.nombre.toLowerCase().indexOf('polo') >= 0 ||
+                     c.nombre.toLowerCase().indexOf('pantalon') >= 0;
+        
+        if (esRopa) {
+          tbody.appendChild(crearFilaMultiplesTallas(c.nombre));
+        } else {
+          tbody.appendChild(nuevaLineaRegistro(c.nombre, 1));
+        }
       };
       contBotones.appendChild(btn);
     });
@@ -1193,20 +1289,103 @@ window.guardarTrabajos = function() {
       document.getElementById('me-notas').value = registro.notas || '';
       sel.value = registro.clienteId;
       tbody.innerHTML = '';
+      // Agrupamos las líneas por concepto
+      var agrupado = {};
       (registro.lineas || []).forEach(function(l) {
-        tbody.appendChild(nuevaLineaRegistro(l.concepto, l.cantidad));
+        if (!agrupado[l.concepto]) {
+          agrupado[l.concepto] = { concepto: l.concepto, total: 0, tallas: {} };
+        }
+        agrupado[l.concepto].total += l.cantidad;
+        if (l.talla) {
+          agrupado[l.concepto].tallas[l.talla] = (agrupado[l.concepto].tallas[l.talla] || 0) + l.cantidad;
+        }
+      });
+
+      // Pintamos una fila por cada concepto agrupado
+      Object.keys(agrupado).forEach(function(concepto) {
+        var grupo = agrupado[concepto];
+        
+        // Si el concepto tiene más de una talla, creamos la fila expandida
+        if (Object.keys(grupo.tallas).length > 1) {
+          var tr = crearFilaMultiplesTallas(grupo.concepto);
+          var listaTallas = tr.querySelector('.lista-tallas-dinamicas');
+          
+          Object.keys(grupo.tallas).forEach(function(tallaGuardada) {
+            var existe = false;
+            listaTallas.querySelectorAll('.inp-cant-talla').forEach(function(inp) {
+              if (inp.getAttribute('data-talla') === tallaGuardada) existe = true;
+            });
+            if (!existe) {
+              var div = document.createElement('div');
+              div.style.cssText = 'display:flex; flex-direction:column; align-items:center;';
+              div.innerHTML = 
+                '<span style="font-size:0.7rem; font-weight:bold; color:var(--text-soft); margin-bottom:2px;">' + tallaGuardada + '</span>' +
+                '<input type="number" min="0" class="inp-cant-talla" data-talla="' + tallaGuardada + '" placeholder="0" style="width:100%; padding:0.3rem 0.1rem; font-size:0.85rem; text-align:center; border:1px solid var(--border); border-radius:4px; box-sizing: border-box;">';
+              listaTallas.appendChild(div);
+            }
+          });
+
+          var inputs = tr.querySelectorAll('.inp-cant-talla');
+          inputs.forEach(function(inp) {
+            var talla = inp.getAttribute('data-talla');
+            if (grupo.tallas[talla]) {
+              inp.value = grupo.tallas[talla];
+            }
+          });
+          
+          tbody.appendChild(tr);
+        } else {
+          // Si es una sola talla o no tiene talla, usamos la fila normal
+          var tallaUnica = Object.keys(grupo.tallas)[0] || '';
+          tbody.appendChild(nuevaLineaRegistro(grupo.concepto, grupo.total, tallaUnica));
+        }
       });
     }
 
     document.getElementById('modal-entrada').hidden = false;
   };
 
-  function nuevaLineaRegistro(nombre, cantidad) {
+  function nuevaLineaRegistro(nombre, cantidad, talla) {
     var tr = document.createElement('tr');
+    
+    // Lista de tallas (descendente, sin gigantes)
+    var TALLAS = ['', '2XL', 'XL', 'L', 'M', 'S', 'XS', '2XS', '3XS', '4XS', '5XS', '6XS'];
+    
+    var opciones = TALLAS.map(function(t) {
+      return '<option value="' + t + '"' + (t === talla ? ' selected' : '') + '>' + (t === '' ? '— Talla —' : t) + '</option>';
+    }).join('');
+    
+    opciones += '<option value="__otro__">✏️ Otra...</option>';
+
     tr.innerHTML =
       '<td><input type="text" class="inp-con" value="' + (nombre || '') + '" placeholder="Ej: Camisetas..." style="width:100%;"></td>' +
+      '<td>' +
+        '<select class="inp-talla-select" style="width:100%; margin-bottom: 0.2rem;">' + opciones + '</select>' +
+        '<input type="text" class="inp-talla-custom" value="" placeholder="Personalizada..." style="width:100%; display:none;">' +
+      '</td>' +
       '<td><input type="number" min="1" class="inp-cant" value="' + (cantidad || 1) + '" style="width:100%;"></td>' +
       '<td class="centro"><button type="button" class="btn btn-sm btn-peligro btn-del-linea">✕</button></td>';
+
+    var sel = tr.querySelector('.inp-talla-select');
+    var inpCustom = tr.querySelector('.inp-talla-custom');
+
+    // Si la talla es personalizada, mostrar el input y rellenarlo
+    if (talla && TALLAS.indexOf(talla) === -1 && talla !== '') {
+      sel.value = '__otro__';
+      inpCustom.style.display = 'block';
+      inpCustom.value = talla;
+    }
+
+    sel.onchange = function() {
+      if (this.value === '__otro__') {
+        inpCustom.style.display = 'block';
+        inpCustom.focus();
+      } else {
+        inpCustom.style.display = 'none';
+        inpCustom.value = '';
+      }
+    };
+
     tr.querySelector('.btn-del-linea').onclick = function() { tr.remove(); };
     return tr;
   }
@@ -1220,9 +1399,45 @@ window.guardarTrabajos = function() {
     var tbody = document.getElementById('me-lineas');
     var lineas = [];
     tbody.querySelectorAll('tr').forEach(function(tr) {
-      var concepto = tr.querySelector('.inp-con').value.trim();
-      var cant = parseInt(tr.querySelector('.inp-cant').value) || 0;
-      if (concepto && cant > 0) lineas.push({ concepto: concepto, cantidad: cant });
+      var inpCon = tr.querySelector('.inp-con');
+      
+      if (!inpCon) return;
+      var concepto = inpCon.value.trim();
+      if (!concepto) return;
+
+      // 1. ¿Es una fila de múltiples tallas?
+      var inputsTallas = tr.querySelectorAll('.inp-cant-talla');
+      if (inputsTallas.length > 0) {
+        inputsTallas.forEach(function(inp) {
+          var cant = parseInt(inp.value) || 0;
+          var talla = inp.getAttribute('data-talla');
+          if (cant > 0) {
+            lineas.push({ concepto: concepto, cantidad: cant, talla: talla });
+          }
+        });
+        return; // Ya hemos procesado esta fila
+      }
+
+      // 2. Es una fila normal (input simple)
+      var inpCant = tr.querySelector('.inp-cant');
+      var inpTallaSel = tr.querySelector('.inp-talla-select');
+      var inpTallaCustom = tr.querySelector('.inp-talla-custom');
+      
+      if (!inpCant) return;
+      var cant = parseInt(inpCant.value) || 0;
+      
+      var talla = '';
+      if (inpTallaSel) {
+        if (inpTallaSel.value === '__otro__' && inpTallaCustom) {
+          talla = inpTallaCustom.value.trim();
+        } else {
+          talla = inpTallaSel.value;
+        }
+      }
+      
+      if (cant > 0) {
+        lineas.push({ concepto: concepto, cantidad: cant, talla: talla });
+      }
     });
 
     if (!lineas.length) { alert('Añade al menos una prenda.'); return; }
@@ -2117,11 +2332,27 @@ document.addEventListener('DOMContentLoaded', function() {
     contenedor.style.display = 'block';
     tbody.innerHTML = '';
 
+    // Agrupamos las líneas por concepto
+    var agrupado = {};
     reg.lineas.forEach(function(l) {
+      if (!agrupado[l.concepto]) {
+        agrupado[l.concepto] = { total: 0, tallas: [] };
+      }
+      agrupado[l.concepto].total += l.cantidad;
+      if (l.talla) {
+        agrupado[l.concepto].tallas.push(l.talla + ': ' + l.cantidad);
+      }
+    });
+
+    // Pintamos una fila por cada concepto agrupado
+    Object.keys(agrupado).forEach(function(concepto) {
+      var grupo = agrupado[concepto];
+      var textoTallas = grupo.tallas.length > 0 ? '<div style="font-size: 0.75rem; color: var(--text-soft); margin-top: 2px;">' + grupo.tallas.join(' · ') + '</div>' : '';
+      
       var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td style="color:#555;">' + window.escapar(l.concepto) + '</td>' +
-        '<td class="derecha" style="font-weight:bold; color:#555;">' + l.cantidad + '</td>';
+        '<td style="color:#555;">' + window.escapar(concepto) + textoTallas + '</td>' +
+        '<td class="derecha" style="font-weight:bold; color:#555; vertical-align: top; padding-top: 0.5rem;">' + grupo.total + '</td>';
       tbody.appendChild(tr);
     });
   };
@@ -3714,9 +3945,29 @@ document.addEventListener('DOMContentLoaded', function() {
       html += '<div class="pr-material-cliente">';
       html += '<div class="pr-material-titulo">📦 Material aportado por el cliente (no se cobra)</div>';
       html += '<table class="pr-material-tabla">';
+      
+      // Agrupamos por concepto
+      var materialAgrupado = {};
       materialCliente.lineas.forEach(function(l) {
-        html += '<tr><td>' + l.concepto + '</td><td>' + l.cantidad + '</td></tr>';
+        if (!materialAgrupado[l.concepto]) {
+          materialAgrupado[l.concepto] = { total: 0, tallas: [] };
+        }
+        materialAgrupado[l.concepto].total += l.cantidad;
+        if (l.talla) {
+          materialAgrupado[l.concepto].tallas.push(l.talla + ': ' + l.cantidad);
+        }
       });
+
+      Object.keys(materialAgrupado).forEach(function(concepto) {
+        var grupo = materialAgrupado[concepto];
+        var textoTallas = grupo.tallas.length > 0 ? '<div style="font-size: 0.75rem; color: #888; margin-top: 2px;">' + grupo.tallas.join(' · ') + '</div>' : '';
+        
+        html += '<tr>' +
+                  '<td>' + concepto + textoTallas + '</td>' +
+                  '<td style="vertical-align: top; padding-top: 0.5rem;">' + grupo.total + '</td>' +
+                '</tr>';
+      });
+      
       html += '</table></div>';
     }
 
@@ -3827,7 +4078,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Función para crear una fila de variante
   function crearFilaVariante(tbody, color, talla, cantidad) {
     var COLORES = ['Blanco', 'Negro', 'Rojo', 'Azul', 'Verde', 'Gris'];
-    var TALLAS = ['Sin talla', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    var TALLAS = ['', '2XL', 'XL', 'L', 'M', 'S', 'XS', '2XS', '3XS', '4XS', '5XS', '6XS'];
     
     var tr = document.createElement('tr');
     

@@ -111,6 +111,40 @@
         </div>`;
       });
     }
+
+    // ─── NUEVO: PINTAR LISTA DE COBROS PENDIENTES ───
+    var listaCobros = document.getElementById('db-cobros-lista');
+    if (listaCobros) {
+      // Filtramos los presupuestos que no estén cobrados y no sean borradores
+      var pendientes = presupuestos.filter(function(p) {
+        return p.estado !== 'borrador' && p.estado !== 'rechazado' && p.cobro !== 'cobrado';
+      });
+      
+      // Los ordenamos por fecha (los más antiguos primero, para cobrar antes)
+      pendientes.sort(function(a, b) { return new Date(a.fecha) - new Date(b.fecha); });
+
+      if (pendientes.length === 0) {
+        listaCobros.innerHTML = '<p style="color:var(--text-soft); text-align: center; margin-top: 1rem;">No hay documentos pendientes de cobro. ¡Todo al día!</p>';
+      } else {
+        var htmlCobros = '<table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">';
+        htmlCobros += '<thead><tr style="border-bottom: 2px solid var(--border); color: var(--text-soft); text-align: left;">';
+        htmlCobros += '<th style="padding: 0.5rem;">Documento</th><th style="padding: 0.5rem;">Cliente</th><th style="padding: 0.5rem;">Fecha</th><th style="padding: 0.5rem; text-align: right;">Importe</th></tr></thead><tbody>';
+        
+        pendientes.forEach(function(p) {
+          var colorEstado = (p.estado === 'entregado') ? '#2e7d32' : '#f57c00';
+          var textEstado = (p.estado === 'entregado') ? 'Albarán' : 'En curso';
+          
+          htmlCobros += '<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="window.abrirDocDesdeCliente(\'' + p.id + '\')" onmouseover="this.style.background=\'var(--bg-soft)\'" onmouseout="this.style.background=\'transparent\'">';
+          htmlCobros += '<td style="padding: 0.5rem; font-weight: 600; color: var(--primary);">' + p.numero + '<br><small style="color:' + colorEstado + '; font-size:0.7rem;">' + textEstado + '</small></td>';
+          htmlCobros += '<td style="padding: 0.5rem;">' + (p.cliente ? p.cliente.nombre : 'Sin cliente') + '</td>';
+          htmlCobros += '<td style="padding: 0.5rem; color: var(--text-soft);">' + p.fecha + '</td>';
+          htmlCobros += '<td style="padding: 0.5rem; text-align: right; font-weight: bold; color: #c62828;">' + window.eur(p.total || 0) + '</td>';
+          htmlCobros += '</tr>';
+        });
+        htmlCobros += '</tbody></table>';
+        listaCobros.innerHTML = htmlCobros;
+      }
+    }
   };
 
   // Cargar al entrar a inicio

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ArandaCrafts — Presupuestos</title>
+  <title>ArandaCrafts v1.0 — Gestión de Taller</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,7 +54,8 @@
       <button class="nav-btn" data-vista="ajustes">Ajustes</button>
     </nav>
     <button id="btnMenu" class="icon-btn menu-btn" title="Menú">☰</button>
-    <div class="topbar-right">
+    <div class="topbar-right" style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 0.7rem; color: var(--text-soft); font-weight: 600; letter-spacing: 0.5px; opacity: 0.7;">v1.0</span>
       <button id="btnTema" class="icon-btn" title="Cambiar tema">🌙</button>
     </div>
   </header>
@@ -84,6 +85,12 @@
       <h2>🔥 Top 5 Más Vendidos</h2>
       <div id="db-top-ventas"></div>
     </div>
+  </div>
+
+  <!-- NUEVO PANEL: PENDIENTE DE COBRO -->
+  <div class="dash-panel" style="margin-top: 1.5rem;">
+    <h2>💸 Documentos Pendientes de Cobro</h2>
+    <div id="db-cobros-lista" style="max-height: 300px; overflow-y: auto;"></div>
   </div>
 </section>
 
@@ -755,7 +762,8 @@
             <thead>
               <tr>
                 <th>Concepto</th>
-                <th style="width:100px">Cantidad</th>
+                <th style="width:120px">Talla / Color</th>
+                <th style="width:80px">Cant.</th>
                 <th style="width:40px"></th>
               </tr>
             </thead>
@@ -847,7 +855,7 @@
 <script src="js/inventario.js"></script>
 
 <footer class="statusbar">
-    <span id="status-info">ArandaCrafts · v0.1</span>
+    <span id="status-info">ArandaCrafts · v1.0</span>
   </footer>
 
 <script src="js/manual.js"></script>
